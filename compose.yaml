@@ -1,0 +1,13 @@
+services:
+  proxy:
+    restart: unless-stopped
+    container_name: go-simple-proxy
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./config:/config
+    ports:
+      - 8123:8123
+    environment:
+      - ENV=dev

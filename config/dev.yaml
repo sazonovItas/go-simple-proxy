@@ -1,0 +1,7 @@
+proxy:
+  address: 0.0.0.0:8123
+  secrets:
+    key: ./secrets/server.key
+    cert: ./secrets/server.crt
+  block-list:
+    - example.com
