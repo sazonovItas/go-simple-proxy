@@ -7,8 +7,8 @@ proxy-test:
 	curl --proxytunnel -v --proxy http://0.0.0.0:8123 --proxy-insecure -k https://mangalib.me
 
 build:
-	go build -o ./bin/go-simple-proxy ./cmd/proxy/main.go
+	go build -o ./.bin/go-simple-proxy ./cmd/proxy/main.go
 
 run: build
-	./bin/go-simple-proxy
+	./.bin/go-simple-proxy
 

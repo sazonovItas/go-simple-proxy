@@ -4,4 +4,3 @@ proxy:
     key: ./secrets/server.key
     cert: ./secrets/server.crt
   block-list:
-    - example.com

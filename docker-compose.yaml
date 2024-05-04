@@ -1,9 +1,12 @@
+# TODO: add secrets for tls and database creditanals
+
 services:
   proxy:
     restart: unless-stopped
     container_name: go-simple-proxy
     build:
       context: .
+      dockerfile: ./docker/proxy.Dockerfile
       target: development
     volumes:
       - ./config:/config

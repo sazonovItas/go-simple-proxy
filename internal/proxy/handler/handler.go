@@ -9,7 +9,6 @@ import (
 	"slices"
 	"strings"
 
-	configproxy "github.com/sazonovItas/go-simple-proxy/internal/config/proxy"
 	"github.com/sazonovItas/go-simple-proxy/internal/proxy/common"
 )
 
@@ -19,25 +18,17 @@ const (
 )
 
 type ProxyHandler struct {
-	logger      *slog.Logger
-	certManager *CertManager
-	blockList   []string
+	logger    *slog.Logger
+	blockList []string
 }
 
 func NewProxyHandler(
 	logger *slog.Logger,
-	certCfg configproxy.ProxySecrets,
 	blockList []string,
 ) *ProxyHandler {
-	certManager, err := NewCertManager(certCfg)
-	if err != nil {
-		panic(err)
-	}
-
 	return &ProxyHandler{
-		logger:      logger,
-		certManager: certManager,
-		blockList:   blockList,
+		logger:    logger,
+		blockList: blockList,
 	}
 }
 
