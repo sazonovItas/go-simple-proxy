@@ -29,3 +29,7 @@ func NewDiscardLogger(level slog.Level, out io.Writer) *slog.Logger {
 	handler := opts.NewDiscardHandler(out)
 	return slog.New(handler)
 }
+
+func Err(err error) slog.Attr {
+	return slog.String("error", err.Error())
+}

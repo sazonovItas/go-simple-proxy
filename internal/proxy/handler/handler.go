@@ -1,15 +1,19 @@
 package proxy
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"slices"
 	"strings"
+	"time"
 
-	"github.com/sazonovItas/go-simple-proxy/internal/proxy/common"
+	proxyutils "github.com/sazonovItas/go-simple-proxy/internal/proxy/utils"
+	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
 )
 
 const (
@@ -68,37 +72,115 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer clientConn.Close()
 
-	ph.logger.Debug("connecting", "address", r.URL.Host)
-	targetConn, err := net.Dial("tcp", r.URL.Host)
+	// targetHost := r.URL.Host
+	// if len(strings.Split(targetHost, ":")) == 1 {
+	// 	targetHost += ":80"
+	// }
+	//
+	// ph.logger.Debug("connecting", "address", r.URL.Host)
+	// targetConn, err := net.Dial("tcp", targetHost)
+	// if err != nil {
+	// 	ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
+	// 	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+	// 	return
+	// }
+	// defer targetConn.Close()
+
+	// clientDumpReq, err := httputil.DumpRequest(r, true)
+	// if err != nil {
+	// 	ph.logger.Error("failed get dump request", "error", err.Error())
+	// 	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+	// 	return
+	// }
+	//
+	// _, err = targetConn.Write(clientDumpReq)
+	// if err != nil {
+	// 	ph.logger.Error("failed write client request", "error", err.Error())
+	// 	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+	// 	return
+	// }
+	//
+	// ph.logger.Debug("transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+	// go func() {
+	// 	_, _ = io.Copy(targetConn, clientConn)
+	// 	targetConn.Close()
+	// }()
+	//
+	// _, _ = io.Copy(clientConn, targetConn)
+	// ph.logger.Debug("done transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+
+	client := &http.Client{
+		Transport: NewProxyRoundTripper(ph.logger, nil),
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Timeout: 5 * time.Second,
+	}
+
+	dumpResponse, err := handleSingle(client, r)
 	if err != nil {
-		ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
+		ph.logger.Error("handler single", slogger.Err(err))
 		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
-	defer targetConn.Close()
+	ph.logger.Warn("dump response", "response", dumpResponse)
 
-	clientDumpReq, err := httputil.DumpRequest(r, true)
+	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
 	if err != nil {
-		ph.logger.Error("failed get dump request", "error", err.Error())
-		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+		ph.logger.Error("write target connection", slogger.Err(err))
 		return
 	}
+}
 
-	_, err = targetConn.Write(clientDumpReq)
-	if err != nil {
-		ph.logger.Error("failed write client request", "error", err.Error())
-		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
-		return
+func handleSingle(client *http.Client, inReq *http.Request) ([]byte, error) {
+	ctx := inReq.Context()
+	outReq := inReq.Clone(ctx)
+
+	outReq.RequestURI = ""
+	if inReq.ContentLength == 0 {
+		outReq.Body = nil
+	}
+	if outReq.Body != nil {
+		defer outReq.Body.Close()
+	}
+	if outReq.Header == nil {
+		outReq.Header = make(http.Header)
+	}
+	outReq.Close = false
+
+	if _, ok := outReq.Header["User-Agent"]; !ok {
+		outReq.Header.Set("User-Agent", "")
 	}
 
-	ph.logger.Debug("transfering", "from", r.RemoteAddr, "to", r.URL.Host)
-	go func() {
-		_, _ = io.Copy(targetConn, clientConn)
-		targetConn.Close()
-	}()
+	resp, err := client.Do(outReq)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+	defer resp.Request.Body.Close()
 
-	_, _ = io.Copy(clientConn, targetConn)
-	ph.logger.Debug("done transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+	return httputil.DumpResponse(resp, true)
+}
+
+func changeRequestToTarget(req *http.Request, targetHost string, proto string) error {
+	if proto != HTTPS {
+		return nil
+	}
+
+	if !strings.HasPrefix(targetHost, "https") {
+		targetHost = "https://" + targetHost
+	}
+
+	targetUrl, err := url.Parse(targetHost)
+	if err != nil {
+		return err
+	}
+
+	targetUrl.Path = req.URL.Path
+	targetUrl.RawQuery = req.URL.RawQuery
+	req.URL = targetUrl
+
+	req.RequestURI = ""
+	return nil
 }
 
 func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +215,7 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ph *ProxyHandler) WriteRawResponse(conn net.Conn, statusCode int, r *http.Request) {
-	if err := common.WriteRawResponse(conn, statusCode, r); err != nil {
+	if err := proxyutils.WriteRawResponse(conn, statusCode, r); err != nil {
 		ph.logger.Error("writing response", "error", err.Error())
 	}
 }

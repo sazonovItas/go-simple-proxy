@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sazonovItas/go-simple-proxy/internal/proxy/common"
 	"github.com/sazonovItas/go-simple-proxy/internal/proxy/models"
+	proxyutils "github.com/sazonovItas/go-simple-proxy/internal/proxy/utils"
 )
 
 type RequestResponseRepo interface {
@@ -44,7 +44,7 @@ func (prt *proxyRoundTripper) RoundTrip(r *http.Request) (*http.Response, error)
 		prt.logger.Debug("request dump", "request", fmt.Sprintf("%s %s HTTP/%d.%d", r.Method, r.URL.Path, r.ProtoMajor, r.ProtoMinor))
 	}
 
-	reqDump := common.ParseRequest(r)
+	reqDump := proxyutils.ParseRequest(r)
 	reqDump.ReceivedAt = time.Now()
 	if r.Body != nil {
 		var reader io.ReadCloser
@@ -80,7 +80,7 @@ func (prt *proxyRoundTripper) RoundTrip(r *http.Request) (*http.Response, error)
 		prt.logger.Debug("response dump", "response", fmt.Sprintf("HTTP/%d.%d %d %s", resp.ProtoMajor, resp.ProtoMinor, resp.StatusCode, resp.Status))
 	}
 
-	respDump := common.ParseResponse(resp)
+	respDump := proxyutils.ParseResponse(resp)
 	if resp.Body != nil {
 		var reader io.ReadCloser
 		switch resp.Header.Get("Content-Encoding") {
