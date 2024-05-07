@@ -85,7 +85,7 @@ func (h *DiscardHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	}
 }
 
-// TODO: implement
+// TODO: implement.
 func (h *DiscardHandler) WithGroup(name string) slog.Handler {
 	return &DiscardHandler{
 		Handler: h.Handler.WithGroup(name),

@@ -7,7 +7,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-// Loading config from the environment variable
+// Loading config from the environment variable.
 func LoadCfgFromEnv[T any]() (*T, error) {
 	const op = "internal.config.configutils.LoadCfgFromEnv"
 
@@ -20,7 +20,7 @@ func LoadCfgFromEnv[T any]() (*T, error) {
 	return &cfg, nil
 }
 
-// Loading config from the file
+// Loading config from the file.
 func LoadCfgFromFile[T any](configPath string) (*T, error) {
 	const op = "internal.config.utils.LoadCfgFromFile"
 
@@ -38,7 +38,7 @@ func LoadCfgFromFile[T any](configPath string) (*T, error) {
 	return &cfg, nil
 }
 
-// GetEnv returns value of environment variable ENV or local if ENV
+// GetEnv returns value of environment variable ENV or local if ENV.
 func GetEnv() string {
 	env := os.Getenv("ENV")
 	if env == "" {

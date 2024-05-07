@@ -6,5 +6,4 @@
 
 ### Other
 
-- [ ] Support FTP and FTPS
-- [ ] Support other protocols
+- [ ] Support SOCKv4 and SOCKv5

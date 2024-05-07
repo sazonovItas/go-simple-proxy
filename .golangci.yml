@@ -1,0 +1,28 @@
+run:
+  timeout: 5m
+  tests: false
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    # - unused
+    - ineffassign
+    - staticcheck
+    - gosec
+
+  presets:
+    - bugs
+    # - comment
+
+  fast: true
+
+issues:
+  exclude:
+    - ./web
+    - ./secrets
+
+output:
+  show-stats: true

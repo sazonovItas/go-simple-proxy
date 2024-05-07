@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log/slog"
@@ -23,6 +24,7 @@ const (
 
 type ProxyHandler struct {
 	logger    *slog.Logger
+	rt        http.RoundTripper
 	blockList []string
 }
 
@@ -32,6 +34,7 @@ func NewProxyHandler(
 ) *ProxyHandler {
 	return &ProxyHandler{
 		logger:    logger,
+		rt:        NewProxyRoundTripper(logger, nil),
 		blockList: blockList,
 	}
 }
@@ -64,7 +67,10 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
-	clientConn, _, err := w.(http.Hijacker).Hijack()
+	rc := http.NewResponseController(w)
+	_ = rc.EnableFullDuplex()
+
+	clientConn, _, err := rc.Hijack()
 	if err != nil {
 		ph.logger.Error("hijack failed", "error", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -100,17 +106,17 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 	//
-	// ph.logger.Debug("transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+	// ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
 	// go func() {
 	// 	_, _ = io.Copy(targetConn, clientConn)
 	// 	targetConn.Close()
 	// }()
 	//
 	// _, _ = io.Copy(clientConn, targetConn)
-	// ph.logger.Debug("done transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+	// ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
 
 	client := &http.Client{
-		Transport: NewProxyRoundTripper(ph.logger, nil),
+		Transport: ph.rt,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
@@ -123,9 +129,24 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
-	ph.logger.Warn("dump response", "response", dumpResponse)
 
-	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+	ph.logger.Warn(
+		"dump response",
+		"response",
+		string(dumpResponse),
+	)
+	// ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+
+	if strings.Contains(string(dumpResponse), "\\") {
+		ph.logger.Info("restricted symbol")
+	}
+
+	nw, err := io.Copy(
+		clientConn,
+		bytes.NewReader(dumpResponse),
+	)
+	ph.logger.Info("written bytes", "count", nw)
+
 	if err != nil {
 		ph.logger.Error("write target connection", slogger.Err(err))
 		return
@@ -140,9 +161,11 @@ func handleSingle(client *http.Client, inReq *http.Request) ([]byte, error) {
 	if inReq.ContentLength == 0 {
 		outReq.Body = nil
 	}
+
 	if outReq.Body != nil {
 		defer outReq.Body.Close()
 	}
+
 	if outReq.Header == nil {
 		outReq.Header = make(http.Header)
 	}
@@ -156,7 +179,7 @@ func handleSingle(client *http.Client, inReq *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
-	defer resp.Request.Body.Close()
+	defer resp.Body.Close()
 
 	return httputil.DumpResponse(resp, true)
 }
@@ -204,14 +227,14 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 
 	ph.WriteRawResponse(clientConn, http.StatusOK, r)
 
-	ph.logger.Debug("transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
 	go func() {
 		_, err = io.Copy(targetConn, clientConn)
 		targetConn.Close()
 	}()
 
 	_, err = io.Copy(clientConn, targetConn)
-	ph.logger.Debug("done transfering", "from", r.RemoteAddr, "to", r.URL.Host)
+	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
 }
 
 func (ph *ProxyHandler) WriteRawResponse(conn net.Conn, statusCode int, r *http.Request) {

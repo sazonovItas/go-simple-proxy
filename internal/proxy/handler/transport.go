@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/sazonovItas/go-simple-proxy/internal/proxy/models"
 	proxyutils "github.com/sazonovItas/go-simple-proxy/internal/proxy/utils"
 )
@@ -105,17 +107,18 @@ func (prt *proxyRoundTripper) RoundTrip(r *http.Request) (*http.Response, error)
 
 		body := io.NopCloser(bytes.NewReader(rawBody))
 		resp.Body = body
+		resp.Header.Del("Content-Encoding")
 		resp.ContentLength = int64(len(rawBody))
-		resp.Header.Set("Content-Length", strconv.Itoa(len(rawBody)))
+		resp.Header.Set("Content-Length", strconv.Itoa(5))
 		respDump.Body = string(rawBody)
 	}
 	respDump.Raw = string(dumpResponse)
 	respDump.ReceivedAt = time.Now()
 
 	reqResp := models.RequestResponse{
-		ProcessedAt: time.Now(),
-		Request:     *reqDump,
-		Response:    *respDump,
+		ID:       primitive.NewObjectID(),
+		Request:  *reqDump,
+		Response: *respDump,
 	}
 
 	prt.logger.Info("processed request", "payload", reqResp)

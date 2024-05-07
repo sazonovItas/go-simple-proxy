@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Request struct {
 	Raw        string    `json:"raw,omitempty" bson:"raw"`
@@ -27,7 +31,7 @@ type Response struct {
 }
 
 type RequestResponse struct {
-	ProcessedAt time.Time `json:"processed_at" bson:"processed_at"`
-	Request     Request   `json:"request"      bson:"request"`
-	Response    Response  `json:"response"     bson:"response"`
+	ID       primitive.ObjectID `json:"id"       bson:"_id"`
+	Request  Request            `json:"request"  bson:"request"`
+	Response Response           `json:"response" bson:"response"`
 }
