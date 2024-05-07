@@ -57,8 +57,8 @@ func main() {
 	defer func() {
 		cancel()
 
-		if !errors.Is(shutdownCtx.Err(), context.Canceled) {
-			logger.Warn("proxy shutdown with error", slogger.Err(err))
+		if shutdownCtx.Err() != nil && !errors.Is(shutdownCtx.Err(), context.Canceled) {
+			logger.Warn("proxy shutdown with error", slogger.Err(shutdownCtx.Err()))
 		}
 	}()
 

@@ -1,7 +1,5 @@
 proxy:
   address: 127.0.0.1:8123
   read_header_timeout: 200ms
-  secrets:
-    key: ./secrets/server.key
-    cert: ./secrets/server.crt
+  shutdown_timeout: 10s
   block-list:
