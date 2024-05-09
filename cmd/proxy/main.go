@@ -13,6 +13,7 @@ import (
 	configproxy "github.com/sazonovItas/go-simple-proxy/internal/config/proxy"
 	configutils "github.com/sazonovItas/go-simple-proxy/internal/config/utils"
 	proxy "github.com/sazonovItas/go-simple-proxy/internal/proxy/handler"
+	"github.com/sazonovItas/go-simple-proxy/internal/proxy/middleware"
 	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
 )
 
@@ -32,7 +33,7 @@ func main() {
 	proxyServer := http.Server{
 		Addr:              cfg.Proxy.Address,
 		ReadHeaderTimeout: cfg.Proxy.ReadHeaderTimeout,
-		Handler:           proxyHandler,
+		Handler:           middleware.ProxyBasicAuth(logger, "proxy")(proxyHandler),
 		TLSNextProto:      map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
 

@@ -15,7 +15,6 @@ import (
 )
 
 func BenchmarkMemoryCacheSetWithCleanUp(b *testing.B) {
-	const N = 1000000
 	const cleanupInterval = time.Millisecond * 300
 	const defaultExpiration = time.Millisecond * 500
 
@@ -69,6 +68,26 @@ func BenchmarkMemoryCacheGet(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("Get", func(sb *testing.B) {
+		sb.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				i := rand.Intn(N)
+				want := testData[i]
+
+				got, _ := cache.Get(strconv.Itoa(i))
+				assert.Equal(sb, want, got, fmt.Sprintf("want %d, got %d", want, got))
+			}
+		})
+
+		sb.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				i := rand.Intn(N)
+				want := testData[i]
+
+				got, _ := cache.Get(strconv.Itoa(i))
+				assert.Equal(sb, want, got, fmt.Sprintf("want %d, got %d", want, got))
+			}
+		})
+
 		sb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				i := rand.Intn(N)
