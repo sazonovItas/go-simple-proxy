@@ -17,3 +17,13 @@ run: build
 lint:
 	golangci-lint run ./...
 .PHONY: lint
+
+test:
+	go test -race -v ./...
+.PHONY: test
+
+coverage:
+	go test -coverprofile=c.out ./...;\
+	go tool cover -func=c.out;\
+	rm c.out
+.PHONY: coverage
