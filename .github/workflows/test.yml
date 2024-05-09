@@ -5,12 +5,18 @@ jobs:
   go-test:
     name: Go test
     runs-on: ubuntu-latest
-    staps:
+    steps:
       - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - name: go get & test
+          cache-dependencies-path: ./go.sum
+      - name: Install dependencies
+        run: go get -v -t -d ./...
+      - name: Build
+        run: go build -v ./cmd/proxy/main.go
+      - name: Test with cli tools
         run: |
-          go get -v -t -d ./...
           go test -v ./...
-          go test -v -bench=. ./...
+          go test -bench=. ./...
