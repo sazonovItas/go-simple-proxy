@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log/slog"
@@ -14,7 +13,6 @@ import (
 	"time"
 
 	proxyutils "github.com/sazonovItas/go-simple-proxy/internal/proxy/utils"
-	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
 )
 
 const (
@@ -40,15 +38,19 @@ func NewProxyHandler(
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ph.logger.Info("new request", "remote_addr", r.RemoteAddr)
-
 	ph.logger.Debug(
 		"new http request",
 		"method", r.Method,
 		"url", r.URL.String(),
 		"headers", r.Header,
 		"cookies", r.Cookies(),
+		"remote_address", r.RemoteAddr,
 	)
+
+	// if _, err := r.Cookie("ProxyAuth"); err != nil && errors.Is(err, http.ErrNoCookie) {
+	// 	http.Redirect(w, r, "http://google.com", http.StatusTemporaryRedirect)
+	// 	return
+	// }
 
 	host := strings.Split(r.URL.Host, ":")[0]
 	if slices.Index(ph.blockList, host) != -1 {
@@ -65,6 +67,67 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ph.handleHTTP(w, r)
 }
 
+func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Proxy-Authorization") == "" {
+		w.Header().Set("Proxy-Authenticate", "Digest realm=\""+r.Host+"\"")
+		w.WriteHeader(http.StatusProxyAuthRequired)
+		return
+	}
+
+	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
+	clientConn, _, err := w.(http.Hijacker).Hijack()
+	if err != nil {
+		ph.logger.Error("hijack failed", "error", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer clientConn.Close()
+
+	ph.logger.Debug("connecting", "address", r.URL.Host)
+	targetConn, err := net.Dial("tcp", r.URL.Host)
+	if err != nil {
+		ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
+		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+		return
+	}
+	defer targetConn.Close()
+
+	cookie := http.Cookie{
+		Name:     "ProxyAuth",
+		Value:    "hi",
+		Expires:  time.Now().Add(time.Second * 3600),
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	}
+	ph.logger.Info("cookie", "cookie", cookie.String())
+
+	_, err = fmt.Fprintf(
+		clientConn,
+		"HTTP/%d.%d %03d %s\r\nSet-Cookie: %s\r\n\r\n",
+		r.ProtoMajor,
+		r.ProtoMinor,
+		http.StatusOK,
+		http.StatusText(http.StatusOK),
+		cookie.String(),
+	)
+
+	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
+	go func() {
+		_, err = io.Copy(targetConn, clientConn)
+		targetConn.Close()
+	}()
+
+	_, err = io.Copy(clientConn, targetConn)
+	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
+}
+
+func (ph *ProxyHandler) WriteRawResponse(conn net.Conn, statusCode int, r *http.Request) {
+	if err := proxyutils.WriteRawResponse(conn, statusCode, r); err != nil {
+		ph.logger.Error("writing response", "error", err.Error())
+	}
+}
+
 func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
 	rc := http.NewResponseController(w)
@@ -78,79 +141,42 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer clientConn.Close()
 
-	// targetHost := r.URL.Host
-	// if len(strings.Split(targetHost, ":")) == 1 {
-	// 	targetHost += ":80"
-	// }
-	//
-	// ph.logger.Debug("connecting", "address", r.URL.Host)
-	// targetConn, err := net.Dial("tcp", targetHost)
-	// if err != nil {
-	// 	ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
-	// 	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
-	// 	return
-	// }
-	// defer targetConn.Close()
-
-	// clientDumpReq, err := httputil.DumpRequest(r, true)
-	// if err != nil {
-	// 	ph.logger.Error("failed get dump request", "error", err.Error())
-	// 	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
-	// 	return
-	// }
-	//
-	// _, err = targetConn.Write(clientDumpReq)
-	// if err != nil {
-	// 	ph.logger.Error("failed write client request", "error", err.Error())
-	// 	ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
-	// 	return
-	// }
-	//
-	// ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
-	// go func() {
-	// 	_, _ = io.Copy(targetConn, clientConn)
-	// 	targetConn.Close()
-	// }()
-	//
-	// _, _ = io.Copy(clientConn, targetConn)
-	// ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
-
-	client := &http.Client{
-		Transport: ph.rt,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-		Timeout: 5 * time.Second,
+	targetHost := r.URL.Host
+	if len(strings.Split(targetHost, ":")) == 1 {
+		targetHost += ":80"
 	}
 
-	dumpResponse, err := handleSingle(client, r)
+	ph.logger.Debug("connecting", "address", r.URL.Host)
+	targetConn, err := net.Dial("tcp", targetHost)
 	if err != nil {
-		ph.logger.Error("handler single", slogger.Err(err))
+		ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
+		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
+		return
+	}
+	defer targetConn.Close()
+
+	clientDumpReq, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		ph.logger.Error("failed get dump request", "error", err.Error())
 		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
 
-	ph.logger.Warn(
-		"dump response",
-		"response",
-		string(dumpResponse),
-	)
-	// ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
-
-	if strings.Contains(string(dumpResponse), "\\") {
-		ph.logger.Info("restricted symbol")
-	}
-
-	nw, err := io.Copy(
-		clientConn,
-		bytes.NewReader(dumpResponse),
-	)
-	ph.logger.Info("written bytes", "count", nw)
-
+	_, err = targetConn.Write(clientDumpReq)
 	if err != nil {
-		ph.logger.Error("write target connection", slogger.Err(err))
+		ph.logger.Error("failed write client request", "error", err.Error())
+		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
+
+	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
+	go func() {
+		_, _ = io.Copy(targetConn, clientConn)
+		targetConn.Close()
+	}()
+
+	_, _ = io.Copy(clientConn, targetConn)
+	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
 }
 
 func handleSingle(client *http.Client, inReq *http.Request) ([]byte, error) {
@@ -204,41 +230,4 @@ func changeRequestToTarget(req *http.Request, targetHost string, proto string) e
 
 	req.RequestURI = ""
 	return nil
-}
-
-func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
-	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
-	clientConn, _, err := w.(http.Hijacker).Hijack()
-	if err != nil {
-		ph.logger.Error("hijack failed", "error", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer clientConn.Close()
-
-	ph.logger.Debug("connecting", "address", r.URL.Host)
-	targetConn, err := net.Dial("tcp", r.URL.Host)
-	if err != nil {
-		ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
-		ph.WriteRawResponse(clientConn, http.StatusInternalServerError, r)
-		return
-	}
-	defer targetConn.Close()
-
-	ph.WriteRawResponse(clientConn, http.StatusOK, r)
-
-	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
-	go func() {
-		_, err = io.Copy(targetConn, clientConn)
-		targetConn.Close()
-	}()
-
-	_, err = io.Copy(clientConn, targetConn)
-	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
-}
-
-func (ph *ProxyHandler) WriteRawResponse(conn net.Conn, statusCode int, r *http.Request) {
-	if err := proxyutils.WriteRawResponse(conn, statusCode, r); err != nil {
-		ph.logger.Error("writing response", "error", err.Error())
-	}
 }

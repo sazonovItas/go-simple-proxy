@@ -29,11 +29,10 @@ func main() {
 	logger.Info("config loaded", "config", cfg)
 
 	proxyHandler := proxy.NewProxyHandler(logger, cfg.Proxy.BlockList)
-
 	proxyServer := http.Server{
 		Addr:              cfg.Proxy.Address,
 		ReadHeaderTimeout: cfg.Proxy.ReadHeaderTimeout,
-		Handler:           http.HandlerFunc(proxyHandler.ServeHTTP),
+		Handler:           proxyHandler,
 		TLSNextProto:      map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
 

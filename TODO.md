@@ -2,8 +2,8 @@
 
 ### Request and Response storage
 
-- [ ] Change logic of the storing request and response (maybe move it out of round tripper of http client)
+- [ ] Add auth to proxy users
 
 ### Other
 
-- [ ] Support SOCKv4 and SOCKv5
+- [ ] Support FTP, DNS over HTTP
