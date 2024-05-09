@@ -1,16 +1,12 @@
 package proxy
 
 import (
-	"fmt"
 	"io"
 	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
-	"slices"
 	"strings"
-	"time"
 
 	proxyutils "github.com/sazonovItas/go-simple-proxy/internal/proxy/utils"
 )
@@ -21,19 +17,12 @@ const (
 )
 
 type ProxyHandler struct {
-	logger    *slog.Logger
-	rt        http.RoundTripper
-	blockList []string
+	logger *slog.Logger
 }
 
-func NewProxyHandler(
-	logger *slog.Logger,
-	blockList []string,
-) *ProxyHandler {
+func NewProxyHandler(logger *slog.Logger) *ProxyHandler {
 	return &ProxyHandler{
-		logger:    logger,
-		rt:        NewProxyRoundTripper(logger, nil),
-		blockList: blockList,
+		logger: logger,
 	}
 }
 
@@ -47,15 +36,9 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"remote_address", r.RemoteAddr,
 	)
 
-	// if _, err := r.Cookie("ProxyAuth"); err != nil && errors.Is(err, http.ErrNoCookie) {
-	// 	http.Redirect(w, r, "http://google.com", http.StatusTemporaryRedirect)
-	// 	return
-	// }
-
-	host := strings.Split(r.URL.Host, ":")[0]
-	if slices.Index(ph.blockList, host) != -1 {
-		ph.logger.Info("access forbidden", "host", host)
-		w.WriteHeader(http.StatusForbidden)
+	if r.Header.Get("Proxy-Authorization") == "" {
+		w.Header().Set("Proxy-Authenticate", "Basic realm=proxy")
+		w.WriteHeader(http.StatusProxyAuthRequired)
 		return
 	}
 
@@ -68,12 +51,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Proxy-Authorization") == "" {
-		w.Header().Set("Proxy-Authenticate", "Digest realm=\""+r.Host+"\"")
-		w.WriteHeader(http.StatusProxyAuthRequired)
-		return
-	}
-
 	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
 	clientConn, _, err := w.(http.Hijacker).Hijack()
 	if err != nil {
@@ -92,25 +69,7 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer targetConn.Close()
 
-	cookie := http.Cookie{
-		Name:     "ProxyAuth",
-		Value:    "hi",
-		Expires:  time.Now().Add(time.Second * 3600),
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-	}
-	ph.logger.Info("cookie", "cookie", cookie.String())
-
-	_, err = fmt.Fprintf(
-		clientConn,
-		"HTTP/%d.%d %03d %s\r\nSet-Cookie: %s\r\n\r\n",
-		r.ProtoMajor,
-		r.ProtoMinor,
-		http.StatusOK,
-		http.StatusText(http.StatusOK),
-		cookie.String(),
-	)
+	ph.WriteRawResponse(clientConn, http.StatusOK, r)
 
 	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
 	go func() {
@@ -177,57 +136,4 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	_, _ = io.Copy(clientConn, targetConn)
 	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
-}
-
-func handleSingle(client *http.Client, inReq *http.Request) ([]byte, error) {
-	ctx := inReq.Context()
-	outReq := inReq.Clone(ctx)
-
-	outReq.RequestURI = ""
-	if inReq.ContentLength == 0 {
-		outReq.Body = nil
-	}
-
-	if outReq.Body != nil {
-		defer outReq.Body.Close()
-	}
-
-	if outReq.Header == nil {
-		outReq.Header = make(http.Header)
-	}
-	outReq.Close = false
-
-	if _, ok := outReq.Header["User-Agent"]; !ok {
-		outReq.Header.Set("User-Agent", "")
-	}
-
-	resp, err := client.Do(outReq)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-	defer resp.Body.Close()
-
-	return httputil.DumpResponse(resp, true)
-}
-
-func changeRequestToTarget(req *http.Request, targetHost string, proto string) error {
-	if proto != HTTPS {
-		return nil
-	}
-
-	if !strings.HasPrefix(targetHost, "https") {
-		targetHost = "https://" + targetHost
-	}
-
-	targetUrl, err := url.Parse(targetHost)
-	if err != nil {
-		return err
-	}
-
-	targetUrl.Path = req.URL.Path
-	targetUrl.RawQuery = req.URL.RawQuery
-	req.URL = targetUrl
-
-	req.RequestURI = ""
-	return nil
 }

@@ -28,7 +28,7 @@ func main() {
 	}
 	logger.Info("config loaded", "config", cfg)
 
-	proxyHandler := proxy.NewProxyHandler(logger, cfg.Proxy.BlockList)
+	proxyHandler := proxy.NewProxyHandler(logger)
 	proxyServer := http.Server{
 		Addr:              cfg.Proxy.Address,
 		ReadHeaderTimeout: cfg.Proxy.ReadHeaderTimeout,
