@@ -1,12 +1,12 @@
 services:
   proxy:
-    image_name: go-simple-proxy
+    image: go-proxy
     build:
       context: .
       dockerfile: ./docker/proxy.Dockerfile
       target: development
 
-    container_name: simple-proxy
+    container_name: go-proxy
     restart: unless-stopped
 
     # TODO: move volume out of here
