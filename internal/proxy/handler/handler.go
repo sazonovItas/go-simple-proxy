@@ -1,4 +1,4 @@
-package proxy
+package proxyhandler
 
 import (
 	"io"
@@ -36,7 +36,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
-	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
 	rc := http.NewResponseController(w)
 	_ = rc.EnableFullDuplex()
 
@@ -48,7 +47,6 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer clientConn.Close()
 
-	ph.logger.Debug("connecting", "address", r.URL.Host)
 	targetConn, err := net.Dial("tcp", r.URL.Host)
 	if err != nil {
 		ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
@@ -59,18 +57,11 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 
 	ph.writeRawResponse(clientConn, http.StatusOK, r)
 
-	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
-	go func() {
-		_, err = io.Copy(targetConn, clientConn)
-		targetConn.Close()
-	}()
-
-	_, err = io.Copy(clientConn, targetConn)
-	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
+	upload, download := ph.transfering(clientConn, targetConn)
+	_, _ = upload, download
 }
 
 func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
-	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
 	rc := http.NewResponseController(w)
 	_ = rc.EnableFullDuplex()
 
@@ -87,7 +78,6 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		targetHost += ":80"
 	}
 
-	ph.logger.Debug("connecting", "address", r.URL.Host)
 	targetConn, err := net.Dial("tcp", targetHost)
 	if err != nil {
 		ph.logger.Error("connection failed", "address", r.URL.Host, "error", err.Error())
@@ -110,14 +100,18 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ph.logger.Debug("transferring", "from", r.RemoteAddr, "to", r.URL.Host)
+	upload, download := ph.transfering(clientConn, targetConn)
+	_, _ = upload, download
+}
+
+func (ph *ProxyHandler) transfering(clientConn, targetConn net.Conn) (upload, download int64) {
 	go func() {
-		_, _ = io.Copy(targetConn, clientConn)
+		upload, _ = io.Copy(targetConn, clientConn)
 		targetConn.Close()
 	}()
 
-	_, _ = io.Copy(clientConn, targetConn)
-	ph.logger.Debug("done transferring", "from", r.RemoteAddr, "to", r.URL.Host)
+	download, _ = io.Copy(clientConn, targetConn)
+	return
 }
 
 func (ph *ProxyHandler) writeRawResponse(conn net.Conn, statusCode int, r *http.Request) {

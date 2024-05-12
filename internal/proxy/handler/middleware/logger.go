@@ -27,11 +27,3 @@ func Logger(l *slog.Logger) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(fn)
 	}
 }
-
-func NewLoggerResponseWriter(w http.ResponseWriter) *loggerResponseWriter {
-	return &loggerResponseWriter{ResponseWriter: w}
-}
-
-type loggerResponseWriter struct {
-	http.ResponseWriter
-}
