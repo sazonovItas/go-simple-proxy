@@ -17,7 +17,7 @@ type Creditanals struct {
 var ErrGetProxyUserCreditanals = errors.New("failed get proxy user creditanals")
 
 // ProxyUserCreditanalsKey is key for user creditanals in request context
-const proxyUserCreditanalsKey string = "proxy_user_creditanals"
+const proxyUserCreditanalsKey key = "proxy_user_creditanals"
 
 // ProxyBasicAuth is middleware for proxy basic authorization
 // if Proxy-Authorization header not exists or basic auth is invalid

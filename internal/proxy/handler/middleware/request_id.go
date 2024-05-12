@@ -8,7 +8,7 @@ import (
 )
 
 // RequestIdKey is key for request id in request context
-const requestIdKey string = "request_id"
+const requestIdKey key = "request_id"
 
 // RequestId is middleware for request id.
 // Request id go along with context value (string) under the key RequestIdKey
