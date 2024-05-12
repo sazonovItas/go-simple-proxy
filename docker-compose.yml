@@ -9,9 +9,6 @@ services:
     container_name: go-proxy
     restart: unless-stopped
 
-    # TODO: move volume out of here
-    volumes:
-      - ./config:/config
     ports:
       - 8123:8123
     environment:

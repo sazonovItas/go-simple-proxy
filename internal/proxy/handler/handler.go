@@ -27,15 +27,6 @@ func NewProxyHandler(logger *slog.Logger) *ProxyHandler {
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ph.logger.Debug(
-		"new http request",
-		"method", r.Method,
-		"url", r.URL.String(),
-		"headers", r.Header,
-		"cookies", r.Cookies(),
-		"remote_address", r.RemoteAddr,
-	)
-
 	if r.Method == http.MethodConnect {
 		ph.handleHTTPS(w, r)
 		return
@@ -46,7 +37,10 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 	ph.logger.Debug("hijacking connection", "src", r.RemoteAddr, "dest", r.URL.Host)
-	clientConn, _, err := w.(http.Hijacker).Hijack()
+	rc := http.NewResponseController(w)
+	_ = rc.EnableFullDuplex()
+
+	clientConn, _, err := rc.Hijack()
 	if err != nil {
 		ph.logger.Error("hijack failed", "error", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

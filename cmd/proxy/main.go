@@ -2,18 +2,18 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	configproxy "github.com/sazonovItas/go-simple-proxy/internal/config/proxy"
 	configutils "github.com/sazonovItas/go-simple-proxy/internal/config/utils"
 	proxy "github.com/sazonovItas/go-simple-proxy/internal/proxy/handler"
-	"github.com/sazonovItas/go-simple-proxy/internal/proxy/middleware"
+	"github.com/sazonovItas/go-simple-proxy/internal/proxy/handler/middleware"
 	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
 )
 
@@ -30,11 +30,15 @@ func main() {
 	logger.Info("config loaded", "config", cfg)
 
 	proxyHandler := proxy.NewProxyHandler(logger)
+	handler := middleware.ProxyBasicAuth("proxy")(proxyHandler)
+	handler = middleware.Logger(logger)(handler)
+	handler = middleware.RequestId()(handler)
+
 	proxyServer := http.Server{
-		Addr:              cfg.Proxy.Address,
+		Addr:              cfg.Proxy.Host + ":" + strconv.Itoa(cfg.Proxy.Port),
+		Handler:           handler,
 		ReadHeaderTimeout: cfg.Proxy.ReadHeaderTimeout,
-		Handler:           middleware.ProxyBasicAuth(logger, "proxy")(proxyHandler),
-		TLSNextProto:      map[string]func(*http.Server, *tls.Conn, http.Handler){},
+		IdleTimeout:       cfg.Proxy.IdleTImeout,
 	}
 
 	ctx, stop := signal.NotifyContext(
@@ -45,7 +49,7 @@ func main() {
 	defer stop()
 
 	go func() {
-		logger.Info("proxy server started", "address", cfg.Proxy.Address)
+		logger.Info("proxy server started", "host", cfg.Proxy.Host, "port", cfg.Proxy.Port)
 		err := proxyServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server shutdown with error", "error", err.Error())

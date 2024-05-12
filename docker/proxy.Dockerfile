@@ -22,7 +22,7 @@ ARG TARGETARCH=amd64
 # HACK: --mount=type=bind,target=. 
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server ./cmd/proxy
+    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/proxy ./cmd/proxy
 
 FROM alpine:latest AS development
 
@@ -49,11 +49,12 @@ RUN adduser \
 USER appuser
 
 # Copy the executable from the "build" stage.
-COPY --from=build /bin/server /bin/
+COPY --from=build /bin/proxy /bin/
+COPY --from=build /src/config/ /config/
 
 # Just for information
 # Expose the port that the application listens on.
 EXPOSE 8123
 
 # What the container should run when it is started.
-ENTRYPOINT [ "/bin/server" ]
+ENTRYPOINT [ "/bin/proxy" ]

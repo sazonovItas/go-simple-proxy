@@ -1,5 +1,6 @@
 proxy:
-  address: 127.0.0.1:8123
-  read_header_timeout: 200ms
+  host: "127.0.0.1"
+  port: 8123
+  read_header_timeout: 1s
+  idle_timeout: 60s
   shutdown_timeout: 10s
-  block-list:

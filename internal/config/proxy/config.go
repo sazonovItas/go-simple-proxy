@@ -7,7 +7,9 @@ type Config struct {
 }
 
 type Proxy struct {
-	Address           string        `yaml:"address"`
-	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout"`
+	Host              string        `yaml:"host"`
+	Port              int           `yaml:"port"`
 	ReadHeaderTimeout time.Duration `yaml:"read_header_timeout"`
+	IdleTImeout       time.Duration `yaml:"idle_timeout"`
+	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout"`
 }
