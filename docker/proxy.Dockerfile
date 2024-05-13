@@ -8,7 +8,7 @@ WORKDIR /src
 # Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
 # TODO: mount better than copy
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod/ \
+RUN --mount=type=cache,target=/go/pkg/mod/  \
     go mod download -x
 
 # This is the architecture you’re building for, which is passed in by the builder.
@@ -22,9 +22,9 @@ ARG TARGETARCH=amd64
 # HACK: --mount=type=bind,target=. 
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/proxy ./cmd/proxy
+    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -o /bin/proxy ./cmd/proxy
 
-FROM alpine:latest AS development
+FROM alpine:3.19.1 AS development
 
 # Install any runtime dependencies that are needed to run your application.
 # Leverage a cache mount to /var/cache/apk/ to speed up subsequent builds.
@@ -50,7 +50,6 @@ USER appuser
 
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/proxy /bin/
-COPY --from=build /src/config/ /config/
 
 # Just for information
 # Expose the port that the application listens on.

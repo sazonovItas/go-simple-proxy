@@ -1,15 +1,32 @@
 services:
-  proxy:
+  # TODO: remove test proxy
+  # WARN: can't break github actions
+  test-proxy:
     image: go-proxy
     build:
       context: .
       dockerfile: ./docker/proxy.Dockerfile
       target: development
 
-    container_name: go-proxy
+    container_name: test-proxy
     restart: unless-stopped
 
     ports:
       - 8123:8123
     environment:
       - ENV=dev
+      - ADDRESS=0.0.0.0:8123
+      - READ_HEADER_TIMEOUT=1s
+      - IDLE_TIMEOUT=60s
+      - SHUTDOWN_TIMEOUT=10s
+
+  # proxy-manager for starting other proxy and
+  proxy-manager:
+    image: go-proxy-manager
+    build:
+      context: .
+      dockerfile: ./docker/proxy_manager.Dockerfile
+      target: development
+
+    container_name: proxy-manager
+    restart: unless-stopped

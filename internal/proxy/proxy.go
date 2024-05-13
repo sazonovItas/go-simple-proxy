@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
-	configproxy "github.com/sazonovItas/go-simple-proxy/internal/config/proxy"
+	proxycfg "github.com/sazonovItas/go-simple-proxy/internal/config/proxy"
+	configutils "github.com/sazonovItas/go-simple-proxy/internal/config/utils"
 	proxy "github.com/sazonovItas/go-simple-proxy/internal/proxy/handler"
 	"github.com/sazonovItas/go-simple-proxy/internal/proxy/handler/middleware"
 	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
@@ -23,7 +24,13 @@ const (
 	production  = "prod"
 )
 
-func Run(cfg *configproxy.Config) {
+func Run() {
+	cfg, err := configutils.LoadCfgFromEnv[proxycfg.Config]()
+	if err != nil {
+		log.Fatalf("failed load config with error: %s", err.Error())
+		return
+	}
+
 	logger := InitLogger(cfg.Env, os.Stdout)
 
 	logger.Info("config loaded", "config", cfg)
@@ -35,7 +42,7 @@ func Run(cfg *configproxy.Config) {
 	handler = middleware.Panic(logger)(handler)
 
 	proxyServer := http.Server{
-		Addr:              cfg.Host + ":" + strconv.Itoa(cfg.Port),
+		Addr:              cfg.Address,
 		Handler:           handler,
 		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		IdleTimeout:       cfg.IdleTimeout,
@@ -49,7 +56,7 @@ func Run(cfg *configproxy.Config) {
 	defer stop()
 
 	go func() {
-		logger.Info("proxy server started", "host", cfg.Host, "port", cfg.Port)
+		logger.Info("proxy server started", "address", cfg.Address)
 		err := proxyServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server shutdown with error", "error", err.Error())
@@ -77,12 +84,12 @@ func InitLogger(env string, out io.Writer) *slog.Logger {
 	var logger *slog.Logger
 
 	switch env {
-	case local:
-		logger = slogger.NewPrettyLogger(slog.LevelDebug, out)
 	case development:
 		logger = slogger.NewPrettyLogger(slog.LevelInfo, out)
 	case production:
 		logger = slogger.NewPrettyLogger(slog.LevelWarn, out)
+	default:
+		logger = slogger.NewPrettyLogger(slog.LevelDebug, out)
 	}
 
 	return logger
