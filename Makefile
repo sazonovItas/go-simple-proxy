@@ -5,7 +5,7 @@ build:
 .PHONY: build
 
 run: build
-	./.bin/proxy_manager
+	DOCKER_API_VERSION=1.44 ./.bin/proxy_manager
 .PHONY: run
 
 lint:

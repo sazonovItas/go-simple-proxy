@@ -1,18 +1,18 @@
 services:
   # TODO: remove test proxy
-  # WARN: can't break github actions
-  test-proxy:
+  # WARN: could break github actions
+  self-controlled-proxy:
     image: go-proxy
     build:
       context: .
       dockerfile: ./docker/proxy.Dockerfile
       target: development
 
-    container_name: test-proxy
+    container_name: self-controlled-proxy
     restart: unless-stopped
 
     ports:
-      - 8123:8123
+      - 127.0.0.1:8124:8123
     environment:
       - ENV=dev
       - ADDRESS=0.0.0.0:8123
@@ -27,6 +27,9 @@ services:
       context: .
       dockerfile: ./docker/proxy_manager.Dockerfile
       target: development
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
 
     container_name: proxy-manager
     restart: unless-stopped
