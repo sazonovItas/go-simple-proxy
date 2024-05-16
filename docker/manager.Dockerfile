@@ -12,12 +12,12 @@ RUN --mount=type=cache,target=/go/pkg/mod/  \
 ARG TARGETARCH=amd64
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=.             \
-    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -o /bin/proxy_manager ./cmd/proxy_manager
+    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -o /bin/manager ./cmd/manager
 
 FROM alpine:3.19.1 AS development
 
-COPY --from=build /bin/proxy_manager /bin/
+COPY --from=build /bin/manager /bin/
 
 EXPOSE 3030
 
-ENTRYPOINT [ "/bin/proxy_manager" ]
+ENTRYPOINT [ "/bin/manager" ]

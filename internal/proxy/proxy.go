@@ -42,10 +42,11 @@ func Run() {
 	handler = middleware.Panic(logger)(handler)
 
 	proxyServer := http.Server{
-		Addr:              cfg.Address,
+		Addr:              cfg.Host + ":" + cfg.Port,
 		Handler:           handler,
 		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
-		IdleTimeout:       cfg.IdleTimeout,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      cfg.WriteTimeout,
 	}
 
 	ctx, stop := signal.NotifyContext(
@@ -56,7 +57,7 @@ func Run() {
 	defer stop()
 
 	go func() {
-		logger.Info("proxy server started", "address", cfg.Address)
+		logger.Info("proxy server started", "address", cfg.Host+":"+cfg.Port)
 		err := proxyServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server shutdown with error", "error", err.Error())

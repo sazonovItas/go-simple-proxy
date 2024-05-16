@@ -1,11 +1,11 @@
 
 build:
 	go build -o ./.bin/proxy ./cmd/proxy
-	go build -o ./.bin/proxy_manager ./cmd/proxy_manager
+	go build -o ./.bin/manager ./cmd/manager
 .PHONY: build
 
 run: build
-	DOCKER_API_VERSION=1.44 ./.bin/proxy_manager
+	./.bin/manager
 .PHONY: run
 
 lint:
