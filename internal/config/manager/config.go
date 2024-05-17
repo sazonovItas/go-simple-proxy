@@ -21,7 +21,7 @@ type ProxyManagerConfig struct {
 	RPCServer  RPCServerConfig   `yaml:"rpc_server"`
 	Engine     EngineConfig      `yaml:"engine"`
 	Proxies    []proxycfg.Config `yaml:"proxies"`
-	ProxyImage ProxyImageConfig  `yaml:"proxy_container"`
+	ProxyImage ProxyImageConfig  `yaml:"proxy_image"`
 }
 
 type ProxyImageConfig struct {

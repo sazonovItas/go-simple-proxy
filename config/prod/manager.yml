@@ -1,7 +1,6 @@
 proxy_manager:
   proxies:
-    - env: dev
-      host: 127.0.0.1
+    - env: "prod"
       port: 8123
       read_header_timeout: 1s
       read_timeout: 60s

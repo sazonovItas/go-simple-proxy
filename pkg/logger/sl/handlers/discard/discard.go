@@ -6,13 +6,14 @@ import (
 	"io"
 	stdLog "log"
 	"log/slog"
+	"strings"
 	"time"
 )
 
 type DiscardLogFormat struct {
 	Time    time.Time `json:"time"`
 	Level   string    `json:"level"`
-	Message string    `json:"message"`
+	Message string    `json:"msg"`
 	Payload string    `json:"payload,omitempty"`
 }
 
@@ -60,9 +61,10 @@ func (h *DiscardHandler) Handle(ctx context.Context, r slog.Record) error {
 		}
 	}
 
+	level := strings.ToLower(r.Level.String())
 	msg := DiscardLogFormat{
 		Time:    r.Time,
-		Level:   r.Level.String(),
+		Level:   level,
 		Message: r.Message,
 		Payload: string(b),
 	}

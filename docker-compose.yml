@@ -26,11 +26,15 @@ services:
     image: go-proxy-manager
     build:
       context: .
-      dockerfile: ./docker/proxy_manager.Dockerfile
+      dockerfile: ./docker/manager.Dockerfile
       target: development
-
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:rw"
 
     container_name: proxy-manager
     restart: unless-stopped
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+      - "./config/dev/proxy_manager.yml:/config/dev/proxy_manager.yml"
+
+    environment:
+      - CONFIG_PATH=/config/dev/proxy_manager.yml
