@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
 
     ports:
-      - 127.0.0.1:8124:8123
+      - 127.0.0.1:9123:8123
     environment:
       - ENV=dev
       - HOST=0.0.0.0

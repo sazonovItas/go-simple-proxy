@@ -33,45 +33,6 @@ func Run() {
 	logger := InitLogger("dev", os.Stdout)
 	logger.Info("init config", "config", *cfg)
 
-	// cli, err := client.NewClientWithOpts(
-	// 	client.WithVersion(cfg.DockerClient.ApiVersion),
-	// 	client.WithHost(cfg.DockerClient.Host),
-	// 	client.WithTimeout(cfg.DockerClient.Timeout),
-	// )
-	// if err != nil {
-	// 	logger.Error("failed to init client", slogger.Err(err), "config", *cfg)
-	// 	return
-	// }
-	//
-	// resp, err := cli.ContainerCreate(
-	// 	context.Background(),
-	// 	&container.Config{
-	// 		Image:        "go-proxy",
-	// 		ExposedPorts: nat.PortSet{"8123": struct{}{}},
-	// 		Env: []string{
-	// 			"ENV=dev", "PROXY_ID=test_proxy_id", "PORT=8123",
-	// 			"READ_HEADER_TIMEOUT=1s", "READ_TIMEOUT=60s", "WRITE_TIMEOUT=60s", "SHUTDOWN_TIMEOUT=10s",
-	// 		},
-	// 	},
-	// 	&container.HostConfig{
-	// 		AutoRemove: true,
-	// 		PortBindings: nat.PortMap{"8123": []nat.PortBinding{
-	// 			{HostIP: "127.0.0.1", HostPort: "8123"},
-	// 		}},
-	// 	},
-	// 	&network.NetworkingConfig{},
-	// 	&v1.Platform{},
-	// 	"test-proxy",
-	// )
-	// if err != nil {
-	// 	log.Fatalf("error create container: %s", err.Error())
-	// }
-	// log.Printf("container created with id: %s", resp.ID)
-	//
-	// if err := cli.ContainerStart(context.Background(), resp.ID, container.StartOptions{}); err != nil {
-	// 	log.Fatalf("error start container: %s", err.Error())
-	// }
-
 	engine, err := engine.NewEngine(cfg.ProxyManager.ProxyImage.Image, engine.DockerClientConfig{
 		ApiVersion: cfg.DockerClient.ApiVersion,
 		Timeout:    cfg.DockerClient.Timeout,

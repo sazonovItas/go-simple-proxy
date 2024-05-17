@@ -49,6 +49,8 @@ func BenchmarkMemoryCacheSetWithCleanUp(b *testing.B) {
 			}
 		})
 	})
+
+	b.ReportAllocs()
 }
 
 func BenchmarkMemoryCacheGet(b *testing.B) {
