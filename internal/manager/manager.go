@@ -12,8 +12,8 @@ import (
 	"time"
 
 	managercfg "github.com/sazonovItas/go-simple-proxy/internal/config/manager"
-	configutils "github.com/sazonovItas/go-simple-proxy/internal/config/utils"
 	"github.com/sazonovItas/go-simple-proxy/internal/manager/engine"
+	configutils "github.com/sazonovItas/go-simple-proxy/pkg/config/utils"
 	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
 )
 
@@ -25,7 +25,7 @@ const (
 )
 
 func Run() {
-	cfg, err := configutils.LoadCfgFromFile[managercfg.Config](os.Getenv(configPathEnv))
+	cfg, err := configutils.LoadConfigFromFile[managercfg.Config](os.Getenv(configPathEnv))
 	if err != nil {
 		log.Fatalf("faild to load proxy manager config: %s", err.Error())
 	}

@@ -12,9 +12,9 @@ import (
 	"syscall"
 
 	proxycfg "github.com/sazonovItas/go-simple-proxy/internal/config/proxy"
-	configutils "github.com/sazonovItas/go-simple-proxy/internal/config/utils"
 	proxy "github.com/sazonovItas/go-simple-proxy/internal/proxy/handler"
 	"github.com/sazonovItas/go-simple-proxy/internal/proxy/handler/middleware"
+	configutils "github.com/sazonovItas/go-simple-proxy/pkg/config/utils"
 	slogger "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl"
 )
 
@@ -25,7 +25,7 @@ const (
 )
 
 func Run() {
-	cfg, err := configutils.LoadCfgFromEnv[proxycfg.Config]()
+	cfg, err := configutils.LoadConfigFromEnv[proxycfg.Config]()
 	if err != nil {
 		log.Fatalf("failed load config with error: %s", err.Error())
 		return
