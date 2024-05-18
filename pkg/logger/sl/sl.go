@@ -4,8 +4,8 @@ import (
 	"io"
 	"log/slog"
 
-	sldiscard "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl/handlers/discard"
-	slpretty "github.com/sazonovItas/go-simple-proxy/pkg/logger/sl/handlers/pretty"
+	sldiscard "github.com/sazonovItas/proxy-manager/pkg/logger/sl/handlers/discard"
+	slpretty "github.com/sazonovItas/proxy-manager/pkg/logger/sl/handlers/pretty"
 )
 
 func NewPrettyLogger(level slog.Level, out io.Writer) *slog.Logger {

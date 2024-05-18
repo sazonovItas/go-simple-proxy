@@ -13,8 +13,8 @@ github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovk
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
-github.com/sazonovItas/go-simple-proxy v0.0.0-20240509164113-5aeb6e9f14db h1:MHx4HzACBtOOeOR9Ae0jEkAa1pSSqrOIkfald+RczE0=
-github.com/sazonovItas/go-simple-proxy v0.0.0-20240509164113-5aeb6e9f14db/go.mod h1:HdPWfsK/o2Uai9XOlNOoMRtKbWIPllsMIVI8AtRcw0w=
+github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240518211829-609d8270f727 h1:ohJExyFKv2H2SEGTwNrCXet5cF6nDPpvC+DO2CUjNTo=
+github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240518211829-609d8270f727/go.mod h1:8f0M6d7HGvlKk0KAV0qHOBkSU589drWubfw1bipQaak=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.19.0 h1:q5f1RH2jigJ1MoAWp2KTp3gm5zAGFUTarQZ5U386+4o=

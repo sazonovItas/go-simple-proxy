@@ -1,12 +1,8 @@
 services:
-  # TODO: remove test proxy
-  # WARN: could break github actions
   self-controlled-proxy:
     image: go-proxy
     build:
-      context: .
-      dockerfile: ./docker/proxy.Dockerfile
-      target: development
+      context: ./services/proxy/
 
     container_name: self-controlled-proxy
     restart: unless-stopped
@@ -25,16 +21,14 @@ services:
   proxy-manager:
     image: go-proxy-manager
     build:
-      context: .
-      dockerfile: ./docker/manager.Dockerfile
-      target: development
+      context: ./services/proxy-manager/
 
     container_name: proxy-manager
     restart: unless-stopped
 
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:rw"
-      - "./config/dev/proxy_manager.yml:/config/dev/proxy_manager.yml"
+      - "./services/proxy-manager/configs/dev.yml:/configs/dev.yml"
 
     environment:
-      - CONFIG_PATH=/config/dev/proxy_manager.yml
+      - CONFIG_PATH=/configs/dev.yml
