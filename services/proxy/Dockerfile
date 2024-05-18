@@ -1,28 +1,21 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION=1.22.0
+ARG GO_VERSION=1.22.2
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 WORKDIR /src
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
-# TODO: mount better than copy
-COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod/  \
-    go mod download -x
+ARG SERVICE_DIR=./services/proxy
+RUN --mount=type=bind,source=go.mod,target=${SERVICE_DIR}/go.mod  \
+    --mount=type=bind,source=go.sum,target=${SERVICE_DIR}/go.sum  \
+    --mount=type=bind,source=../../pkg,target=./pkg               \
+    --mount=type=cache,target=/go/pkg/mod/                        \
+    cd ${SERVICE_DIR} && go mod download -x
 
-# This is the architecture you’re building for, which is passed in by the builder.
-# Placing it here allows the previous steps to be cached across architectures.
-# HACK: Really usefull
 ARG TARGETARCH=amd64
 
-# Build the application.
-# Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
-# TODO: need always use like that in order to not copy files to container 
-# HACK: --mount=type=bind,target=. 
-COPY . .
-RUN --mount=type=cache,target=/go/pkg/mod/ \
-    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -o /bin/proxy ./cmd/proxy
+RUN --mount=type=cache,target=/go/pkg/mod/  \
+    --mount=type=bind,source=.,target=.     \
+    CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -o /bin/app ./cmd/app
 
 FROM alpine:3.19.1 AS development
 
@@ -49,11 +42,11 @@ RUN adduser \
 USER appuser
 
 # Copy the executable from the "build" stage.
-COPY --from=build /bin/proxy /bin/
+COPY --from=build /bin/app /bin/
 
 # Just for information
 # Expose the port that the application listens on.
 EXPOSE 8123
 
 # What the container should run when it is started.
-ENTRYPOINT [ "/bin/proxy" ]
+ENTRYPOINT [ "/bin/app" ]
