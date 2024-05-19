@@ -4,4 +4,5 @@ use (
 	./pkg
 	./services/proxy
 	./services/proxy-manager
+	./services/proxy-request
 )

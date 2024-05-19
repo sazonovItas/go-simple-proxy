@@ -1,5 +1,5 @@
 IMAGE_TAG=latest
-SERVICE_NAME=go-proxy
+SERVICE_NAME=proxy-request-service
 
 .PHONY: build run 
 build:

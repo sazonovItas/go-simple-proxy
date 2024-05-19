@@ -19,11 +19,11 @@ services:
 
   # proxy-manager for starting other proxy and
   proxy-manager:
-    image: go-proxy-manager
+    image: proxy-manager-service
     build:
       context: ./services/proxy-manager/
 
-    container_name: proxy-manager
+    container_name: proxy-manager-service
     restart: unless-stopped
 
     volumes:
