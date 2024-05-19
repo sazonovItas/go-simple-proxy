@@ -39,7 +39,7 @@ func NewEngine(
 
 func (e *Engine) Run(startUpProxies []config.ProxyConfig) (err error) {
 	for _, cfg := range startUpProxies {
-		ctr := NewProxyContainer("", &cfg, e.proxyImg)
+		ctr := NewProxyContainer("", cfg, e.proxyImg)
 
 		resp, err := e.cli.ContainerCreate(
 			context.Background(),

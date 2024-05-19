@@ -58,7 +58,7 @@ func main() {
 	defer stop()
 
 	go func() {
-		logger.Info("proxy server started", "address", cfg.Port)
+		logger.Info("proxy server started", "address", proxyServer.Addr)
 		err := proxyServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server shutdown with error", "error", err.Error())

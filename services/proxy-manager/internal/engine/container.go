@@ -29,7 +29,7 @@ type ProxyContainer struct {
 
 func NewProxyContainer(
 	containerName string,
-	proxyCfg *config.ProxyConfig,
+	proxyCfg config.ProxyConfig,
 	proxyImage string,
 ) *ProxyContainer {
 	return &ProxyContainer{
