@@ -23,13 +23,22 @@ type ProxyManagerConfig struct {
 }
 
 type ProxyConfig struct {
-	Env               string        `env:"ENV"`
-	ID                string        `env:"PROXY_ID"`
-	Port              string        `env:"PORT"`
-	ReadHeaderTimeout time.Duration `env:"READ_HEADER_TIMEOUT" `
-	ReadTimeout       time.Duration `env:"READ_TIMEOUT"`
-	WriteTimeout      time.Duration `env:"WRITE_TIMEOUT"`
-	ShutdownTimeout   time.Duration `env:"SHUTDOWN_TIMEOUT"`
+	Env               string        `env:"ENV"                 json:"env"`
+	ID                string        `env:"PROXY_ID"            json:"id"`
+	Port              string        `env:"PORT"                json:"port"`
+	ReadHeaderTimeout time.Duration `env:"READ_HEADER_TIMEOUT" json:"read_header_timeout"`
+	ReadTimeout       time.Duration `env:"READ_TIMEOUT"        json:"read_timeout"`
+	WriteTimeout      time.Duration `env:"WRITE_TIMEOUT"       json:"write_timeout"`
+	ShutdownTimeout   time.Duration `env:"SHUTDOWN_TIMEOUT"    json:"shutdown_timeout"`
+
+	ProxyUserCacheTimeout   time.Duration `env:"PROXY_USER_CACHE_TIMEOUT"      json:"proxy_user_cache_timeout"`
+	ProxyUserServiceAddr    string        `env:"PROXY_USER_SERVICE_ADDRESS"    json:"proxy_user_service_addr"`
+	ProxyRequestServiceAddr string        `env:"PROXY_REQUEST_SERVICE_ADDRESS" json:"proxy_request_service_addr"`
+}
+
+type ProxyContainerConfig struct {
+	Image           string `yaml:"image"            env:"PROXY_IMAGE"`
+	ServicesNetwork string `yaml:"services_network" env:"SERVICE_NETWORK"`
 }
 
 type ProxyImageConfig struct {

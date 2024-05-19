@@ -1,3 +1,6 @@
+IMAGE_TAG=latest
+SERVICE_NAME=proxy-manager-service
+
 .PHONY: build run 
 build:
 	go build -o ./bin/app ./cmd/app
@@ -7,18 +10,18 @@ run: build
 
 .PHONY: docker-image docker-container
 docker-image:
-	@if [ ! -z $(docker images -q proxy-manager-service:latest) ]; then docker image rm $(docker images -q proxy-manager-service:latest); fi;
-	@echo "Building docker image proxy-manager-service:latest"
-	@docker build --tag=proxy-manager-service:latest .
+	@if [ ! -z $(docker images -q $(SERVICE_NAME):$(IMAGE_TAG)) ]; then docker image rm $(docker images -q $(SERVICE_NAME):$(IMAGE_TAG)); fi;
+	@echo "Building docker image $(SERVICE_NAME):$(IMAGE_TAG)"
+	@docker build --tag=$(SERVICE_NAME):$(IMAGE_TAG) .
 
 docker-container:
 	docker run --rm -t -i \
-		--name=proxy-manager-service \
+		--name=$(SERVICE_NAME) \
 		--network=host \
 		--env-file=./.env.sample \
 		-v "./configs/dev.yml:/configs/dev.yml" \
 		-v "/var/run/docker.sock:/var/run/docker.sock:rw" \
-		-d proxy-manager-service:latest
+		-d $(SERVICE_NAME):$(IMAGE_TAG)
 
 .PHONY: test
 test:
