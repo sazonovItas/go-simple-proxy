@@ -8,12 +8,27 @@ jobs:
   golangci:
     name: go-lint
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
-      - name: golangci-lint
+          go-version: "1.22.2"
+
+      - name: Check golangci-lint for pkg
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          args: --config ./.golangci.yml ./pkg/...
+
+      - name: Check golangci-lint for services/proxy
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --config ./.golangci.yml ./services/proxy/...
+
+      - name: Check golangci-lint for services/proxy-manager
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --config ./.golangci.yml ./services/proxy-manager/...
