@@ -13,6 +13,8 @@ import (
 
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
+	zaplogger "github.com/sazonovItas/proxy-manager/pkg/logger/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
@@ -31,6 +33,10 @@ func main() {
 		log.Fatalf("failed load config with error: %s", err.Error())
 		return
 	}
+
+	zlog := zaplogger.NewSugaredLogger(zapcore.DebugLevel, os.Stdout)
+	zlog.Info("init zap logger")
+	zlog.Error("test error message")
 
 	logger := InitLogger(cfg.Env, os.Stdout)
 

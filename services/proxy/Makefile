@@ -1,9 +1,9 @@
 .PHONY: build run 
 build:
-	go build -o ./bin ./cmd/app
+	go build -o ./bin/app ./cmd/app
 
 run: build
-	./bin
+	./bin/app
 
 .PHONY: docker-image docker-container
 docker-image:
