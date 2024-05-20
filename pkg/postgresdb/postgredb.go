@@ -3,20 +3,12 @@ package postgresdb
 import (
 	"context"
 	"fmt"
-	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
-type ConnectionOptions struct {
-	MaxOpenConns    int
-	ConnMaxLifetime time.Duration
-	MaxIdleConns    int
-	ConnMaxIdleTime time.Duration
-}
-
-func Connect(ctx context.Context, uri string, opts *ConnectionOptions) (*sqlx.DB, error) {
+func Connect(ctx context.Context, uri string, opts *ConnectionOptions) (*DB, error) {
 	const op = "pkg.postgresdb.Connect"
 
 	db, err := sqlx.ConnectContext(ctx, "pgx", uri)
@@ -29,5 +21,5 @@ func Connect(ctx context.Context, uri string, opts *ConnectionOptions) (*sqlx.DB
 	db.SetMaxIdleConns(opts.MaxIdleConns)
 	db.SetConnMaxIdleTime(opts.ConnMaxIdleTime)
 
-	return db, nil
+	return &DB{DB: db}, nil
 }
