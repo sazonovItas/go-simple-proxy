@@ -3,26 +3,19 @@ package main
 import (
 	"context"
 	"errors"
-	"io"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
+	"github.com/sazonovItas/proxy-manager/pkg/logger"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
-)
-
-const (
-	local       = "local"
-	development = "dev"
-	production  = "prod"
 )
 
 func main() {
@@ -32,7 +25,10 @@ func main() {
 		return
 	}
 
-	logger := InitLogger(cfg.Env, os.Stdout)
+	logger := logger.NewSlogLogger(
+		logger.LogConfig{Environment: cfg.Env, LogLevel: logger.DEBUG},
+		os.Stdout,
+	)
 
 	logger.Info("config loaded", "config", cfg)
 
@@ -80,19 +76,4 @@ func main() {
 	}
 
 	logger.Info("server is shuted down")
-}
-
-func InitLogger(env string, out io.Writer) *slog.Logger {
-	var logger *slog.Logger
-
-	switch env {
-	case development:
-		logger = slogger.NewPrettyLogger(slog.LevelInfo, out)
-	case production:
-		logger = slogger.NewPrettyLogger(slog.LevelWarn, out)
-	default:
-		logger = slogger.NewPrettyLogger(slog.LevelDebug, out)
-	}
-
-	return logger
 }

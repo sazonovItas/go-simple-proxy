@@ -3,15 +3,14 @@ package main
 import (
 	"context"
 	"errors"
-	"io"
 	"log"
-	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
+	"github.com/sazonovItas/proxy-manager/pkg/logger"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy-manager/internal/config"
@@ -20,9 +19,6 @@ import (
 
 const (
 	configPathEnv = "CONFIG_PATH"
-	local         = "local"
-	development   = "dev"
-	production    = "prod"
 )
 
 func main() {
@@ -31,7 +27,10 @@ func main() {
 		log.Fatalf("faild to load proxy manager config: %s", err.Error())
 	}
 
-	logger := InitLogger("dev", os.Stdout)
+	logger := logger.NewSlogLogger(
+		logger.LogConfig{Environment: "dev", LogLevel: logger.DEBUG},
+		os.Stdout,
+	)
 	logger.Info("init config", "config", *cfg)
 
 	engine, err := engine.NewEngine(cfg.ProxyManager.ProxyImage.Image, engine.DockerClientConfig{
@@ -74,19 +73,4 @@ func main() {
 	}
 
 	logger.Info("proxy manager is shuted down")
-}
-
-func InitLogger(env string, out io.Writer) *slog.Logger {
-	var logger *slog.Logger
-
-	switch env {
-	case development:
-		logger = slogger.NewPrettyLogger(slog.LevelInfo, out)
-	case production:
-		logger = slogger.NewPrettyLogger(slog.LevelWarn, out)
-	default:
-		logger = slogger.NewPrettyLogger(slog.LevelDebug, out)
-	}
-
-	return logger
 }
