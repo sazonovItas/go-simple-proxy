@@ -1,4 +1,4 @@
-package request
+package pgrequest
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	adaptererrors "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/errors"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 )
 
@@ -25,7 +26,7 @@ func (rr *RequestRepository) GetByID(ctx context.Context, id string) (entity.Req
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return entity.Request{}, ErrRequestNotFound
+			return entity.Request{}, adaptererrors.ErrRequestNotFound
 		default:
 			return entity.Request{}, fmt.Errorf("%s: failed exec statement: %w", op, err)
 		}

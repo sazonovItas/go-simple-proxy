@@ -1,4 +1,4 @@
-package request
+package pgrequest
 
 import (
 	"context"
@@ -12,8 +12,9 @@ import (
 func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) error {
 	const op = "internal.adapter.pgrepo.request.Save"
 
-	const query = `INSERT INTO %s (id, proxy_name, proxy_user_name, host, upload, download, created_at) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7)`
+	const query = `INSERT INTO %s 
+		(id, proxy_id, proxy_name, proxy_user_id, proxy_user_ip, proxy_user_name, host, upload, download, created_at) 
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	stmt, err := rr.db.PreparexContext(ctx, rr.table(query))
 	if err != nil {
@@ -25,7 +26,9 @@ func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) 
 	_, err = stmt.ExecContext(
 		ctx,
 		request.ID,
+		request.ProxyID,
 		request.ProxyName,
+		request.ProxyUserID,
 		request.ProxyUserName,
 		request.Host,
 		request.Upload,
