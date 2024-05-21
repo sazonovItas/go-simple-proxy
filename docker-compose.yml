@@ -1,6 +1,5 @@
 services:
   self-controlled-proxy:
-    image: go-proxy
     build:
       context: ./services/proxy/
 
@@ -19,7 +18,6 @@ services:
 
   # proxy-manager for starting other proxy and
   proxy-manager:
-    image: proxy-manager-service
     build:
       context: ./services/proxy-manager/
 

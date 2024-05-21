@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package request;
+option go_package = "pb.request";
+import "google/protobuf/timestamp.proto";
+
+service ProxyRequestService {
+  rpc SaveProxyRequest(SaveRequest) returns (SaveResponse) {}
+}
+
+message ProxyRequest {
+  optional string id = 1;
+  string proxy_id = 2;
+  string proxy_name = 3;
+  string proxy_user_id = 4;
+  string proxy_user_ip = 5;
+  string proxy_user_name = 6;
+  string host = 7;
+  int64 upload = 8;
+  int64 download = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message SaveResponse { string id = 1; }
+
+message SaveRequest { ProxyRequest request = 1; }

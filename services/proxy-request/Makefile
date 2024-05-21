@@ -8,6 +8,13 @@ build:
 run: build
 	./bin/app
 
+.PHONY: proto
+proto:
+	$(foreach proto_file, $(shell find api/proto -name '*.proto'),\
+		protoc --go_out=api/proto/pb --go_opt=paths=source_relative \
+		--go-grpc_out=api/proto/pb --go-grpc_opt=paths=source_relative \
+		--proto_path=api/proto  $(proto_file);)
+
 .PHONY: docker-image docker-container
 docker-image:
 	@if [ ! -z $(docker images -q $(SERVICE_NAME):$(IMAGE_TAG)) ]; then docker image rm $(docker images -q $(SERVICE_NAME):$(IMAGE_TAG)); fi;
