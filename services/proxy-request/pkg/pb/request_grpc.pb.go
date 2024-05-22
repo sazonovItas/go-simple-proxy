@@ -4,11 +4,10 @@
 // - protoc             v3.21.12
 // source: request.proto
 
-package pb_request
+package request
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -52,7 +51,8 @@ type ProxyRequestServiceServer interface {
 }
 
 // UnimplementedProxyRequestServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedProxyRequestServiceServer struct{}
+type UnimplementedProxyRequestServiceServer struct {
+}
 
 func (UnimplementedProxyRequestServiceServer) SaveProxyRequest(context.Context, *SaveRequest) (*SaveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveProxyRequest not implemented")

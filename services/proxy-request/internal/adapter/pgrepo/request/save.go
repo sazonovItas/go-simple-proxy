@@ -22,13 +22,14 @@ func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) 
 	}
 	defer stmt.Close()
 
-	request.ID = uuid.NewString()
+	id := uuid.New()
 	_, err = stmt.ExecContext(
 		ctx,
-		request.ID,
+		id,
 		request.ProxyID,
 		request.ProxyName,
 		request.ProxyUserID,
+		request.ProxyUserIP,
 		request.ProxyUserName,
 		request.Host,
 		request.Upload,
@@ -38,6 +39,7 @@ func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) 
 	if err != nil {
 		return fmt.Errorf("%s: failed to exec statement: %w", op, err)
 	}
+	request.ID = id.String()
 
 	return nil
 }

@@ -7,4 +7,7 @@
 
 ## Other
 
+- [ ] Where to store errors from services and repositories?
 - [ ] Hide all id's from client
+- [ ] Move init from the main.go
+- [ ] Add grpc auth by token (or something else)

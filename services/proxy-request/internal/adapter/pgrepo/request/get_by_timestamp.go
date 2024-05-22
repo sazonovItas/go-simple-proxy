@@ -43,8 +43,8 @@ func (rr *RequestRepository) GetByTimestamp(
 
 func (rr *RequestRepository) GetByProxyIDAndTimestamp(
 	ctx context.Context,
-	proxyId string,
 	timestamp time.Time,
+	proxyId string,
 	limit int,
 ) ([]entity.Request, error) {
 	const op = "internal.adapter.pgrepo.request.GetByProxyUserIDAndTimestamp"
@@ -74,8 +74,8 @@ func (rr *RequestRepository) GetByProxyIDAndTimestamp(
 
 func (rr *RequestRepository) GetByProxyUserIDAndTimestamp(
 	ctx context.Context,
-	proxyUserId string,
 	timestamp time.Time,
+	proxyUserId string,
 	limit int,
 ) ([]entity.Request, error) {
 	const op = "internal.adapter.pgrepo.request.GetByProxyUserIDAndTimestamp"
@@ -105,8 +105,8 @@ func (rr *RequestRepository) GetByProxyUserIDAndTimestamp(
 
 func (rr *RequestRepository) GetByHostAndTimestamp(
 	ctx context.Context,
-	host string,
 	timestamp time.Time,
+	host string,
 	limit int,
 ) ([]entity.Request, error) {
 	const op = "internal.adapter.pgrepo.request.GetByHostAndTimestamp"

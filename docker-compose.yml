@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   self-controlled-proxy:
     build:
@@ -30,3 +32,22 @@ services:
 
     environment:
       - CONFIG_PATH=/configs/dev.yml
+
+  proxy-request:
+    build:
+      context: ./services/proxy-request
+
+    container_name: proxy-request-service
+    restart: unless-stopped
+
+    environment:
+      - DATABASE_URI=
+
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_DB=proxy_manager_db
+      - POSTGRES_USER=proxy_manager_user
+      - POSTGRES_PASSWORD=proxy_manager_password
+    ports:
+      - "5432:5432"

@@ -7,11 +7,11 @@ import (
 )
 
 type RequestRepository struct {
-	db        postgresdb.DB
+	db        *postgresdb.DB
 	tableName string
 }
 
-func NewRequestRepository(tableName string, db postgresdb.DB) *RequestRepository {
+func NewRequestRepository(tableName string, db *postgresdb.DB) *RequestRepository {
 	return &RequestRepository{
 		tableName: tableName,
 		db:        db,

@@ -20,7 +20,6 @@ type HTTPServerConfig struct {
 }
 
 type RPCServerConfig struct {
-	Address      string        `yaml:"address"       env:"RPC_SERVER_ADDRESS"       env-default:":3223"`
-	ReadTimeout  time.Duration `yaml:"read_timeout"  env:"RPC_SERVER_READ_TIMEOUT"  env-default:"5s"`
-	WriteTimeout time.Duration `yaml:"write_timeout" env:"RPC_SERVER_WRITE_TIMEOUT" env-default:"5s"`
+	Address string        `yaml:"address" env:"RPC_SERVER_ADDRESS" env-default:":3223"`
+	Timeout time.Duration `yaml:"timeout" env:"RPC_SERVER_TIMEOUT" env-default:"30s"`
 }

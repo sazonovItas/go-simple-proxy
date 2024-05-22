@@ -6,13 +6,13 @@ build:
 	go build -o ./bin/app ./cmd/app
 
 run: build
-	./bin/app
+	DATABASE_URI='postgres://proxy_manager_user:proxy_manager_password@127.0.0.1:5432/proxy_manager_db?sslmode=disable' ./bin/app
 
 .PHONY: proto
 proto:
 	$(foreach proto_file, $(shell find api/proto -name '*.proto'),\
-		protoc --go_out=api/proto/pb --go_opt=paths=source_relative \
-		--go-grpc_out=api/proto/pb --go-grpc_opt=paths=source_relative \
+		protoc --go_out=pkg/pb --go_opt=paths=source_relative \
+		--go-grpc_out=pkg/pb --go-grpc_opt=paths=source_relative \
 		--proto_path=api/proto  $(proto_file);)
 
 .PHONY: docker-image docker-container

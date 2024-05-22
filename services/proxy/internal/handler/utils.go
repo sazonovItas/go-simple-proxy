@@ -1,4 +1,4 @@
-package proxyutils
+package proxyhandler
 
 import (
 	"fmt"

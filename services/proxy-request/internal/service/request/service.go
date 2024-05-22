@@ -1,4 +1,4 @@
-package request
+package requestsvc
 
 import (
 	"context"
@@ -38,7 +38,7 @@ type RequestService struct {
 	requestRepo requestRepository
 }
 
-func NewRequestUsecase(requestRepo requestRepository) *RequestService {
+func NewRequestService(requestRepo requestRepository) *RequestService {
 	return &RequestService{
 		requestRepo: requestRepo,
 	}

@@ -12,7 +12,10 @@ import (
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
 	"github.com/sazonovItas/proxy-manager/pkg/logger"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
+	grpcrequest "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/request"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
@@ -25,18 +28,26 @@ func main() {
 		return
 	}
 
-	logger := logger.NewSlogLogger(
+	l := logger.NewSlogLogger(
 		logger.LogConfig{Environment: cfg.Env, LogLevel: logger.DEBUG},
 		os.Stdout,
 	)
+	l.Info("config loaded", "config", cfg)
 
-	logger.Info("config loaded", "config", cfg)
+	// init repository
+	client, err := grpc.NewClient(":3223", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		l.Error("failed connect to request service", slogger.Err(err))
+	}
+	defer client.Close()
 
-	proxyHandler := proxyhandler.NewProxyHandler(logger)
+	requestRepo := grpcrequest.NewRequestRepository(client)
+
+	proxyHandler := proxyhandler.NewProxyHandler(cfg.ID, l, requestRepo)
 	handler := middleware.ProxyBasicAuth("proxy")(proxyHandler)
-	handler = middleware.Logger(logger)(handler)
+	handler = middleware.Logger(l)(handler)
 	handler = middleware.RequestId()(handler)
-	handler = middleware.Panic(logger)(handler)
+	handler = middleware.Panic(l)(handler)
 
 	proxyServer := http.Server{
 		Addr:              ":" + cfg.Port,
@@ -54,10 +65,10 @@ func main() {
 	defer stop()
 
 	go func() {
-		logger.Info("proxy server started", "address", proxyServer.Addr)
+		l.Info("proxy server started", "address", proxyServer.Addr)
 		err := proxyServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Error("server shutdown with error", "error", err.Error())
+			l.Error("server shutdown with error", "error", err.Error())
 		}
 	}()
 	<-ctx.Done()
@@ -67,13 +78,13 @@ func main() {
 		cancel()
 
 		if shutdownCtx.Err() != nil && !errors.Is(shutdownCtx.Err(), context.Canceled) {
-			logger.Warn("proxy shutdown with error", slogger.Err(shutdownCtx.Err()))
+			l.Warn("proxy shutdown with error", slogger.Err(shutdownCtx.Err()))
 		}
 	}()
 
 	if err := proxyServer.Shutdown(shutdownCtx); err != nil {
-		logger.Error("server is shuted down with error", "error", err.Error())
+		l.Error("server is shuted down with error", "error", err.Error())
 	}
 
-	logger.Info("server is shuted down")
+	l.Info("server is shuted down")
 }

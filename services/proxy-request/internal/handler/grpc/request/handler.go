@@ -2,9 +2,10 @@ package grpcrequest
 
 import (
 	"context"
+	"log/slog"
 
-	pb_request "github.com/sazonovItas/proxy-manager/proxy-request/api/proto/pb"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
+	pb_request "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb"
 )
 
 type requestUsecase interface {
@@ -12,15 +13,17 @@ type requestUsecase interface {
 }
 
 type RequestHandler struct {
-	RequestUsc requestUsecase
+	l          *slog.Logger
+	requestUsc requestUsecase
 
 	pb_request.UnimplementedProxyRequestServiceServer
 }
 
 var _ pb_request.ProxyRequestServiceServer = (*RequestHandler)(nil)
 
-func NewRequestHandler(requestUsc requestUsecase) *RequestHandler {
+func NewRequestHandler(logger *slog.Logger, requestUsc requestUsecase) *RequestHandler {
 	return &RequestHandler{
-		RequestUsc: requestUsc,
+		l:          logger,
+		requestUsc: requestUsc,
 	}
 }

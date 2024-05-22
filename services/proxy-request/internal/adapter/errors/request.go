@@ -1,3 +1,4 @@
+// TODO: move out of adapter
 package adaptererrors
 
 import "errors"
