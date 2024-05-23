@@ -25,8 +25,9 @@ type requestUsecase interface {
 }
 
 type ProxyHandler struct {
-	proxyID string
-	l       *slog.Logger
+	proxyID   string
+	proxyName string
+	l         *slog.Logger
 
 	requestUsc requestUsecase
 }
@@ -85,7 +86,6 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 		Download:      download,
 		CreatedAt:     createdAt,
 	}
-	ph.l.Info("content length", "request", request)
 
 	if err := ph.requestUsc.Save(context.Background(), &request); err != nil {
 		ph.l.Error("failed to save request", slogger.Err(err))

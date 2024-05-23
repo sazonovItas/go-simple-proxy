@@ -1,4 +1,4 @@
-package pgrequest
+package requestrepo
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 
-	adaptererrors "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/errors"
+	"github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 )
 
-func (rr *RequestRepository) GetByID(ctx context.Context, id string) (entity.Request, error) {
+func (rr *RequestRepository) Request(ctx context.Context, id string) (entity.Request, error) {
 	const op = "internal.adapter.pgrepo.request.GetByID"
 
 	const query = "SELECT * FROM %s WHERE id=$1"
@@ -26,7 +26,7 @@ func (rr *RequestRepository) GetByID(ctx context.Context, id string) (entity.Req
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return entity.Request{}, adaptererrors.ErrRequestNotFound
+			return entity.Request{}, adapter.ErrRequestNotFound
 		default:
 			return entity.Request{}, fmt.Errorf("%s: failed exec statement: %w", op, err)
 		}

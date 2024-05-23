@@ -11,8 +11,7 @@ run: build
 .PHONY: proto
 proto:
 	$(foreach proto_file, $(shell find api/proto -name '*.proto'),\
-		protoc --go_out=pkg/pb --go_opt=paths=source_relative \
-		--go-grpc_out=pkg/pb --go-grpc_opt=paths=source_relative \
+		protoc --go_out=pkg/pb/ --go-grpc_out=pkg/pb/ \
 		--proto_path=api/proto  $(proto_file);)
 
 .PHONY: docker-image docker-container

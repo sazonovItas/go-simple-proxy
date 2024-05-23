@@ -1,4 +1,4 @@
-package pgrequest
+package requestrepo
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) 
 	if err != nil {
 		return fmt.Errorf("%s: failed to exec statement: %w", op, err)
 	}
-	request.ID = id.String()
+	request.ID = id
 
 	return nil
 }

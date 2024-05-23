@@ -9,8 +9,8 @@ import (
 
 type requestRepository interface {
 	Save(ctx context.Context, request *entity.Request) error
-	GetByID(ctx context.Context, id string) (entity.Request, error)
-	GetByTimestamp(ctx context.Context, timestamp time.Time, limit int) ([]entity.Request, error)
+	Request(ctx context.Context, id string) (entity.Request, error)
+	Timestamp(ctx context.Context, timestamp time.Time, limit int) ([]entity.Request, error)
 
 	GetByHostAndTimestamp(
 		ctx context.Context,

@@ -10,7 +10,16 @@ type Config struct {
 }
 
 type StorageConfig struct {
-	Uri string `yaml:"uri" env:"DATABASE_URI"`
+	Uri       string            `yaml:"uri"          env:"DATABASE_URI"`
+	TableName string            `yaml:"table_name"   env:"DB_TABLE_NAME" env-default:"proxy_requests"`
+	Conn      StorageConnConfig `yaml:"conn_setting"`
+}
+
+type StorageConnConfig struct {
+	MaxOpenConns    int           `yaml:"max_open_conns"     env:"DB_MAX_OPEN_CONNS"     env-default:"25"`
+	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime"  env:"DB_CONN_MAX_LIFETIME"  env-default:"60s"`
+	MaxIdleConns    int           `yaml:"max_idle_conns"     env:"DB_CONN_IDLE_CONNS"    env-default:"10"`
+	ConnMaxIdleTime time.Duration `yaml:"conn_max_idle_time" env:"DB_CONN_MAX_IDLE_TIME" env-default:"10m"`
 }
 
 type HTTPServerConfig struct {

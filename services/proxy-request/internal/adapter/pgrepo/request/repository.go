@@ -1,4 +1,4 @@
-package pgrequest
+package requestrepo
 
 import (
 	"fmt"

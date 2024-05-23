@@ -1,10 +1,10 @@
-package grpcrequest
+package requestrepo
 
 import (
 	"context"
 	"fmt"
 
-	request "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb"
+	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
@@ -13,8 +13,8 @@ import (
 func (rr *RequestRepository) Save(ctx context.Context, r *entity.Request) error {
 	const op = "internal.adapter.grpc.grpcrequest.Save"
 
-	saveRequest := &request.SaveRequest{
-		Request: &request.ProxyRequest{
+	saveRequest := &requestv1.SaveRequest{
+		Request: &requestv1.ProxyRequest{
 			ProxyId:       r.ProxyID,
 			ProxyName:     r.ProxyName,
 			ProxyUserId:   r.ProxyUserID,
@@ -27,11 +27,11 @@ func (rr *RequestRepository) Save(ctx context.Context, r *entity.Request) error 
 		},
 	}
 
-	resp, err := rr.cli.SaveProxyRequest(ctx, saveRequest)
+	resp, err := rr.rpcRequestRepo.Save(ctx, saveRequest)
 	if err != nil {
 		return fmt.Errorf("%s: failed save proxy request: %w", op, err)
 	}
-	r.ID = resp.Id
+	r.ID = resp.GetId()
 
 	return nil
 }

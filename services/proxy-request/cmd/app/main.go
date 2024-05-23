@@ -16,11 +16,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	pgrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/pgrepo/request"
+	requestrepo "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/pgrepo/request"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
 	grpcrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/handler/grpc/request"
 	requestsvc "github.com/sazonovItas/proxy-manager/proxy-request/internal/service/request"
-	pb_request "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb"
+	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
 func main() {
@@ -40,7 +40,12 @@ func main() {
 	db, err := postgresdb.Connect(
 		context.Background(),
 		cfg.Storage.Uri,
-		&postgresdb.ConnectionOptions{},
+		&postgresdb.ConnectionOptions{
+			MaxOpenConns:    cfg.Storage.Conn.MaxOpenConns,
+			ConnMaxLifetime: cfg.Storage.Conn.ConnMaxLifetime,
+			MaxIdleConns:    cfg.Storage.Conn.MaxIdleConns,
+			ConnMaxIdleTime: cfg.Storage.Conn.ConnMaxIdleTime,
+		},
 	)
 	if err != nil {
 		l.Error("failed connect to database", slogger.Err(err))
@@ -50,14 +55,14 @@ func main() {
 
 	// init request repo
 	// TODO: move to internal init
-	requestRepo := pgrequest.NewRequestRepository("proxy_requests", db)
+	requestRepo := requestrepo.NewRequestRepository(cfg.Storage.TableName, db)
 	_ = requestsvc.NewRequestService(requestRepo)
 
 	// init grpc handler
 	// TODO: move to internal init
 	handler := grpcrequest.NewRequestHandler(l, requestRepo)
 	grpcserver := grpc.NewServer(grpc.ConnectionTimeout(cfg.RPCServer.Timeout))
-	pb_request.RegisterProxyRequestServiceServer(grpcserver, handler)
+	requestv1.RegisterProxyRequestServiceServer(grpcserver, handler)
 	reflection.Register(grpcserver)
 
 	listener, err := net.Listen("tcp", cfg.RPCServer.Address)
@@ -67,6 +72,13 @@ func main() {
 	}
 	defer listener.Close()
 
+	go func() {
+		l.Info("RPC server started", "address", cfg.RPCServer.Address)
+		if err := grpcserver.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			l.Error("failed serve connection", slogger.Err(err))
+		}
+	}()
+
 	// graceful shutdown
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
@@ -75,12 +87,6 @@ func main() {
 	)
 	defer stop()
 
-	go func() {
-		l.Info("RPC server started", "address", cfg.RPCServer.Address)
-		if err := grpcserver.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-			l.Error("failed serve connection", slogger.Err(err))
-		}
-	}()
 	<-ctx.Done()
 
 	grpcserver.GracefulStop()

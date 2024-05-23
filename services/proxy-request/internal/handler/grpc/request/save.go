@@ -3,22 +3,26 @@ package grpcrequest
 import (
 	"context"
 
+	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
-	pb_request "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb"
+	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
-func (rh *RequestHandler) SaveProxyRequest(
+func (rh *RequestHandler) Save(
 	ctx context.Context,
-	r *pb_request.SaveRequest,
-) (*pb_request.SaveResponse, error) {
+	r *requestv1.SaveRequest,
+) (*requestv1.SaveResponse, error) {
+	proxyId, _ := uuid.Parse(r.Request.ProxyId)
+	proxyUserId, _ := uuid.Parse(r.Request.ProxyUserName)
+
 	proxyRequest := entity.Request{
-		ProxyID:       r.Request.ProxyId,
+		ProxyID:       proxyId,
 		ProxyName:     r.Request.ProxyName,
-		ProxyUserID:   r.Request.ProxyUserId,
+		ProxyUserID:   proxyUserId,
 		ProxyUserIP:   r.Request.ProxyUserIp,
 		ProxyUserName: r.Request.ProxyUserName,
 		Host:          r.Request.Host,
@@ -33,5 +37,5 @@ func (rh *RequestHandler) SaveProxyRequest(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb_request.SaveResponse{Id: proxyRequest.ID}, nil
+	return &requestv1.SaveResponse{Id: proxyRequest.ID.String()}, nil
 }

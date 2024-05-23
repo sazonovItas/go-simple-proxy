@@ -1,5 +1,4 @@
-// TODO: move out of adapter
-package adaptererrors
+package adapter
 
 import "errors"
 

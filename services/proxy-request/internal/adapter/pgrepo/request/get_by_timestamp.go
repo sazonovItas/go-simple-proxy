@@ -1,4 +1,4 @@
-package pgrequest
+package requestrepo
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"time"
 
-	adaptererrors "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/errors"
+	"github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 )
 
-func (rr *RequestRepository) GetByTimestamp(
+func (rr *RequestRepository) Timestamp(
 	ctx context.Context,
 	timestamp time.Time,
 	limit int,
@@ -32,7 +32,7 @@ func (rr *RequestRepository) GetByTimestamp(
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, adaptererrors.ErrRequestNotFound
+			return nil, adapter.ErrRequestNotFound
 		default:
 			return nil, fmt.Errorf("%s: failed exec statement: %w", op, err)
 		}
@@ -63,7 +63,7 @@ func (rr *RequestRepository) GetByProxyIDAndTimestamp(
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, adaptererrors.ErrRequestNotFound
+			return nil, adapter.ErrRequestNotFound
 		default:
 			return nil, fmt.Errorf("%s: failed exec statement: %w", op, err)
 		}
@@ -94,7 +94,7 @@ func (rr *RequestRepository) GetByProxyUserIDAndTimestamp(
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, adaptererrors.ErrRequestNotFound
+			return nil, adapter.ErrRequestNotFound
 		default:
 			return nil, fmt.Errorf("%s: failed exec statement: %w", op, err)
 		}
@@ -125,7 +125,7 @@ func (rr *RequestRepository) GetByHostAndTimestamp(
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, adaptererrors.ErrRequestNotFound
+			return nil, adapter.ErrRequestNotFound
 		default:
 			return nil, fmt.Errorf("%s: failed exec statement: %w", op, err)
 		}

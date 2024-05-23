@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
-	pb_request "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb"
+	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
 type requestUsecase interface {
@@ -16,10 +16,10 @@ type RequestHandler struct {
 	l          *slog.Logger
 	requestUsc requestUsecase
 
-	pb_request.UnimplementedProxyRequestServiceServer
+	requestv1.UnimplementedProxyRequestServiceServer
 }
 
-var _ pb_request.ProxyRequestServiceServer = (*RequestHandler)(nil)
+var _ requestv1.ProxyRequestServiceServer = (*RequestHandler)(nil)
 
 func NewRequestHandler(logger *slog.Logger, requestUsc requestUsecase) *RequestHandler {
 	return &RequestHandler{

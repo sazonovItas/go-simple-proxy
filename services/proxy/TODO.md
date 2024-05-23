@@ -9,6 +9,8 @@
 
 - [ ] Add auth for proxy users
 - [ ] Support FTP, DNS over HTTP
+- [ ] Add dialer timeout for proxy
+- [ ] Add own dns for proxy
 
 ## Tests
 

@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	grpcrequest "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/request"
+	requestrepo "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/request"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
@@ -35,13 +35,16 @@ func main() {
 	l.Info("config loaded", "config", cfg)
 
 	// init repository
-	client, err := grpc.NewClient(":3223", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := grpc.NewClient(
+		cfg.RequestServiceAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		l.Error("failed connect to request service", slogger.Err(err))
 	}
 	defer client.Close()
 
-	requestRepo := grpcrequest.NewRequestRepository(client)
+	requestRepo := requestrepo.NewRequestRepository(client)
 
 	proxyHandler := proxyhandler.NewProxyHandler(cfg.ID, l, requestRepo)
 	handler := middleware.ProxyBasicAuth("proxy")(proxyHandler)

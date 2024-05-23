@@ -1,14 +1,14 @@
 CREATE TABLE IF NOT EXISTS proxy_requests (
-  id              uuid,
-  proxy_id        varchar(36),
-  proxy_name      varchar(255),
-  proxy_user_id   varchar(36),
-  proxy_user_ip   varchar(39),
-  proxy_user_name varchar(255),
-  host            varchar(255),
-  upload          bigint,
-  download        bigint,
-  created_at      timestamptz DEFAULT NOW(),
+  id              uuid          NOT NULL,
+  proxy_id        uuid          NOT NULL,
+  proxy_name      varchar(255)  NOT NULL,
+  proxy_user_id   uuid          NOT NULL,
+  proxy_user_ip   varchar(39)   NOT NULL,
+  proxy_user_name varchar(255)  NOT NULL,
+  host            varchar(255)  NOT NULL,
+  upload          bigint        NOT NULL,
+  download        bigint        NOT NULL,
+  created_at      timestamptz   NOT NULL  DEFAULT NOW(),
   PRIMARY KEY (id, created_at)
 );
 
