@@ -9,23 +9,26 @@ service ProxyRequestService {
 
   rpc ProxyRequest(GetRequest) returns (GetResponse) {}
 
-  rpc Timestamp(TimestampRequest) returns (TimestampResponse) {}
+  rpc ProxyRequestByTimestamp(TimestampRequest) returns (TimestampResponse) {}
 }
 
-message TimestampRequest { google.protobuf.Timestamp timestamp = 1; }
+message TimestampRequest {
+  google.protobuf.Timestamp timestamp = 1;
+  int32 limit = 2;
+}
 
 message TimestampResponse { repeated ProxyRequest requests = 1; }
 
 message GetRequest { string id = 1; }
 
-message GetResponse { repeated ProxyRequest requests = 1; }
+message GetResponse { ProxyRequest request = 1; }
 
 message SaveResponse { string id = 1; }
 
 message SaveRequest { ProxyRequest request = 1; }
 
 message ProxyRequest {
-  optional string id = 1;
+  string id = 1;
   string proxy_id = 2;
   string proxy_name = 3;
   string proxy_user_id = 4;

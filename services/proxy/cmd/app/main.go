@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/google/uuid"
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
 	"github.com/sazonovItas/proxy-manager/pkg/logger"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
@@ -19,6 +21,7 @@ import (
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
+	proxysvc "github.com/sazonovItas/proxy-manager/services/proxy/internal/service/proxy"
 )
 
 func main() {
@@ -36,7 +39,7 @@ func main() {
 
 	// init repository
 	client, err := grpc.NewClient(
-		cfg.RequestServiceAddr,
+		cfg.Services.RequestServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -45,27 +48,26 @@ func main() {
 	defer client.Close()
 
 	requestRepo := requestrepo.NewRequestRepository(client)
+	proxysvc.New(requestRepo, nil)
 
-	proxyHandler := proxyhandler.NewProxyHandler(cfg.ID, l, requestRepo)
+	proxyHandler := proxyhandler.NewProxyHandler(
+		uuid.NewString(),
+		uuid.NewString(),
+		cfg.Proxy.DialTimeout,
+		l,
+		requestRepo,
+		nil,
+	)
 	handler := middleware.ProxyBasicAuth("proxy")(proxyHandler)
 	handler = middleware.Logger(l)(handler)
 	handler = middleware.RequestId()(handler)
 	handler = middleware.Panic(l)(handler)
 
 	proxyServer := http.Server{
-		Addr:              ":" + cfg.Port,
+		Addr:              fmt.Sprintf(":%d", cfg.Proxy.Port),
 		Handler:           handler,
-		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
-		ReadTimeout:       cfg.ReadTimeout,
-		WriteTimeout:      cfg.WriteTimeout,
+		ReadHeaderTimeout: cfg.Proxy.ReadHeaderTimeout,
 	}
-
-	ctx, stop := signal.NotifyContext(
-		context.Background(),
-		syscall.SIGINT,
-		syscall.SIGTERM,
-	)
-	defer stop()
 
 	go func() {
 		l.Info("proxy server started", "address", proxyServer.Addr)
@@ -74,9 +76,17 @@ func main() {
 			l.Error("server shutdown with error", "error", err.Error())
 		}
 	}()
+
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
 	<-ctx.Done()
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.Proxy.ShutdownTimeout)
 	defer func() {
 		cancel()
 

@@ -11,7 +11,11 @@ import (
 )
 
 func (rr *RequestRepository) Save(ctx context.Context, r *entity.Request) error {
-	const op = "internal.adapter.grpc.grpcrequest.Save"
+	const op = "adapter.grpc.grpcrequest.Save"
+
+	if r.Upload == 0 || r.Download == 0 {
+		return nil
+	}
 
 	saveRequest := &requestv1.SaveRequest{
 		Request: &requestv1.ProxyRequest{

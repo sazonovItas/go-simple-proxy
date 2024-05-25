@@ -16,7 +16,7 @@ func (rr *RequestRepository) Timestamp(
 	timestamp time.Time,
 	limit int,
 ) ([]entity.Request, error) {
-	const op = "internal.adapter.pgrepo.request.GetByTimestamp"
+	const op = "adapter.pgrepo.request.Timestamp"
 
 	const query = `SELECT * FROM %s WHERE created_at<$1 
 	ORDER BY created_at DESC LIMIT $2`
@@ -47,7 +47,7 @@ func (rr *RequestRepository) GetByProxyIDAndTimestamp(
 	proxyId string,
 	limit int,
 ) ([]entity.Request, error) {
-	const op = "internal.adapter.pgrepo.request.GetByProxyUserIDAndTimestamp"
+	const op = "adapter.pgrepo.request.GetByProxyUserIDAndTimestamp"
 
 	const query = `SELECT * FROM %s WHERE created_at<$1 AND proxy_id=$2 
 	ORDER BY created_at DESC LIMIT $3`
@@ -78,7 +78,7 @@ func (rr *RequestRepository) GetByProxyUserIDAndTimestamp(
 	proxyUserId string,
 	limit int,
 ) ([]entity.Request, error) {
-	const op = "internal.adapter.pgrepo.request.GetByProxyUserIDAndTimestamp"
+	const op = "adapter.pgrepo.request.GetByProxyUserIDAndTimestamp"
 
 	const query = `SELECT * FROM %s WHERE created_at<$1 AND proxy_user_id=$2 
 	ORDER BY created_at DESC LIMIT $3`
@@ -91,37 +91,6 @@ func (rr *RequestRepository) GetByProxyUserIDAndTimestamp(
 
 	var requests []entity.Request
 	err = stmt.SelectContext(ctx, &requests, timestamp, proxyUserId, limit)
-	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			return nil, adapter.ErrRequestNotFound
-		default:
-			return nil, fmt.Errorf("%s: failed exec statement: %w", op, err)
-		}
-	}
-
-	return requests, nil
-}
-
-func (rr *RequestRepository) GetByHostAndTimestamp(
-	ctx context.Context,
-	timestamp time.Time,
-	host string,
-	limit int,
-) ([]entity.Request, error) {
-	const op = "internal.adapter.pgrepo.request.GetByHostAndTimestamp"
-
-	const query = `SELECT * FROM %s WHERE created_at<$1 AND host=$2 
-	ORDER BY created_at DESC LIMIT $3`
-
-	stmt, err := rr.db.PreparexContext(ctx, rr.table(query))
-	if err != nil {
-		return nil, fmt.Errorf("%s: failed prepare statement: %w", op, err)
-	}
-	defer stmt.Close()
-
-	var requests []entity.Request
-	err = stmt.SelectContext(ctx, &requests, timestamp, host, limit)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):

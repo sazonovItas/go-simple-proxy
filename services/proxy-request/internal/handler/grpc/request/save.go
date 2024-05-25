@@ -3,38 +3,34 @@ package grpcrequest
 import (
 	"context"
 
-	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
+// TODO: do not save requests with upload and download equal to 0
 func (rh *RequestHandler) Save(
 	ctx context.Context,
-	r *requestv1.SaveRequest,
+	in *requestv1.SaveRequest,
 ) (*requestv1.SaveResponse, error) {
-	proxyId, _ := uuid.Parse(r.Request.ProxyId)
-	proxyUserId, _ := uuid.Parse(r.Request.ProxyUserName)
-
-	proxyRequest := entity.Request{
-		ProxyID:       proxyId,
-		ProxyName:     r.Request.ProxyName,
-		ProxyUserID:   proxyUserId,
-		ProxyUserIP:   r.Request.ProxyUserIp,
-		ProxyUserName: r.Request.ProxyUserName,
-		Host:          r.Request.Host,
-		Upload:        r.Request.Upload,
-		Download:      r.Request.Download,
-		CreatedAt:     r.Request.CreatedAt.AsTime(),
+	if in.Request.ProxyId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "proxy id is required")
 	}
-	rh.l.Info("new request", "request", proxyRequest)
 
-	if err := rh.requestUsc.Save(ctx, &proxyRequest); err != nil {
+	if in.Request.ProxyUserId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "proxy user id is required")
+	}
+
+	proxyRequest, err := ParseRequest(in.Request)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+
+	if err := rh.requestUsc.Save(ctx, proxyRequest); err != nil {
 		rh.l.Error("failed save proxy request", slogger.Err(err))
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	return &requestv1.SaveResponse{Id: proxyRequest.ID.String()}, nil

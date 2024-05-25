@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ProxyRequestServiceClient interface {
 	Save(ctx context.Context, in *SaveRequest, opts ...grpc.CallOption) (*SaveResponse, error)
 	ProxyRequest(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
-	Timestamp(ctx context.Context, in *TimestampRequest, opts ...grpc.CallOption) (*TimestampResponse, error)
+	ProxyRequestByTimestamp(ctx context.Context, in *TimestampRequest, opts ...grpc.CallOption) (*TimestampResponse, error)
 }
 
 type proxyRequestServiceClient struct {
@@ -53,9 +53,9 @@ func (c *proxyRequestServiceClient) ProxyRequest(ctx context.Context, in *GetReq
 	return out, nil
 }
 
-func (c *proxyRequestServiceClient) Timestamp(ctx context.Context, in *TimestampRequest, opts ...grpc.CallOption) (*TimestampResponse, error) {
+func (c *proxyRequestServiceClient) ProxyRequestByTimestamp(ctx context.Context, in *TimestampRequest, opts ...grpc.CallOption) (*TimestampResponse, error) {
 	out := new(TimestampResponse)
-	err := c.cc.Invoke(ctx, "/request.ProxyRequestService/Timestamp", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/request.ProxyRequestService/ProxyRequestByTimestamp", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *proxyRequestServiceClient) Timestamp(ctx context.Context, in *Timestamp
 type ProxyRequestServiceServer interface {
 	Save(context.Context, *SaveRequest) (*SaveResponse, error)
 	ProxyRequest(context.Context, *GetRequest) (*GetResponse, error)
-	Timestamp(context.Context, *TimestampRequest) (*TimestampResponse, error)
+	ProxyRequestByTimestamp(context.Context, *TimestampRequest) (*TimestampResponse, error)
 	mustEmbedUnimplementedProxyRequestServiceServer()
 }
 
@@ -82,8 +82,8 @@ func (UnimplementedProxyRequestServiceServer) Save(context.Context, *SaveRequest
 func (UnimplementedProxyRequestServiceServer) ProxyRequest(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProxyRequest not implemented")
 }
-func (UnimplementedProxyRequestServiceServer) Timestamp(context.Context, *TimestampRequest) (*TimestampResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Timestamp not implemented")
+func (UnimplementedProxyRequestServiceServer) ProxyRequestByTimestamp(context.Context, *TimestampRequest) (*TimestampResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProxyRequestByTimestamp not implemented")
 }
 func (UnimplementedProxyRequestServiceServer) mustEmbedUnimplementedProxyRequestServiceServer() {}
 
@@ -134,20 +134,20 @@ func _ProxyRequestService_ProxyRequest_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ProxyRequestService_Timestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ProxyRequestService_ProxyRequestByTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TimestampRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProxyRequestServiceServer).Timestamp(ctx, in)
+		return srv.(ProxyRequestServiceServer).ProxyRequestByTimestamp(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/request.ProxyRequestService/Timestamp",
+		FullMethod: "/request.ProxyRequestService/ProxyRequestByTimestamp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProxyRequestServiceServer).Timestamp(ctx, req.(*TimestampRequest))
+		return srv.(ProxyRequestServiceServer).ProxyRequestByTimestamp(ctx, req.(*TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -168,8 +168,8 @@ var ProxyRequestService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ProxyRequestService_ProxyRequest_Handler,
 		},
 		{
-			MethodName: "Timestamp",
-			Handler:    _ProxyRequestService_Timestamp_Handler,
+			MethodName: "ProxyRequestByTimestamp",
+			Handler:    _ProxyRequestService_ProxyRequestByTimestamp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

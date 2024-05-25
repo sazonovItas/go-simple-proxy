@@ -9,15 +9,15 @@ import (
 	"strings"
 )
 
+// ProxyUserCreditanalsKey is key for user creditanals in request context
+const proxyUserProxyBasicAuthKey key = "proxy_user_creditanals"
+
+var ErrGetProxyUserCreditanals = errors.New("failed get proxy user creditanals")
+
 type Creditanals struct {
 	Username string
 	Password string
 }
-
-var ErrGetProxyUserCreditanals = errors.New("failed get proxy user creditanals")
-
-// ProxyUserCreditanalsKey is key for user creditanals in request context
-const proxyUserProxyBasicAuthKey key = "proxy_user_creditanals"
 
 // ProxyBasicAuth is middleware for proxy basic authorization
 // if Proxy-Authorization header not exists or basic auth is invalid
@@ -28,7 +28,7 @@ func ProxyBasicAuth(realm string) func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			username, password, ok := getProxyBasicAuth(r)
 			if !ok {
-				proxyBasicAuthFailed(w, realm)
+				ProxyBasicAuthFailed(w, realm)
 				return
 			}
 
@@ -56,7 +56,7 @@ func ProxyUserCreditanalsFromContext(ctx context.Context) (Creditanals, error) {
 	return Creditanals{}, ErrGetProxyUserCreditanals
 }
 
-func proxyBasicAuthFailed(w http.ResponseWriter, realm string) {
+func ProxyBasicAuthFailed(w http.ResponseWriter, realm string) {
 	w.Header().Add("Proxy-Authenticate", fmt.Sprintf("Basic realm=%s", realm))
 	w.WriteHeader(http.StatusProxyAuthRequired)
 }

@@ -1,0 +1,13 @@
+[Unit]
+Description=HTTP/HTTPS Proxy
+After=network.target
+
+[Service]
+User=root
+ExecStart=/root/apps/go-proxy/app
+Restart=always
+RestartSec=10
+StandartOuput=inherit
+
+[Install]
+WantedBy=multi-user.target

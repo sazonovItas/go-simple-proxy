@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
@@ -20,23 +21,40 @@ const (
 	HTTPS = "https"
 )
 
-type requestUsecase interface {
+type requestService interface {
 	Save(ctx context.Context, r *entity.Request) error
 }
 
-type ProxyHandler struct {
-	proxyID   string
-	proxyName string
-	l         *slog.Logger
-
-	requestUsc requestUsecase
+type authService interface {
+	UserByName(ctx context.Context, name string)
 }
 
-func NewProxyHandler(proxyId string, logger *slog.Logger, requestUsc requestUsecase) *ProxyHandler {
+type ProxyHandler struct {
+	id      string
+	name    string
+	timeout time.Duration
+
+	l *slog.Logger
+
+	requestSvc requestService
+	authSvc    authService
+}
+
+func NewProxyHandler(
+	id, name string,
+	timeout time.Duration,
+	logger *slog.Logger,
+	requestSvc requestService,
+	authSvc authService,
+) *ProxyHandler {
 	return &ProxyHandler{
+		id:      id,
+		name:    name,
+		timeout: timeout,
+
 		l:          logger,
-		proxyID:    proxyId,
-		requestUsc: requestUsc,
+		requestSvc: requestSvc,
+		authSvc:    authSvc,
 	}
 }
 
@@ -63,7 +81,7 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer clientConn.Close()
 
-	targetConn, err := net.Dial("tcp", r.URL.Host)
+	targetConn, err := net.DialTimeout("tcp", r.URL.Host, ph.timeout)
 	if err != nil {
 		ph.l.Error("connection failed", "address", r.URL.Host, "error", err.Error())
 		ph.writeRawResponse(clientConn, http.StatusInternalServerError, r)
@@ -76,9 +94,9 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 	upload, download := ph.transfering(clientConn, targetConn)
 
 	request := entity.Request{
-		ProxyID:       ph.proxyID,
-		ProxyName:     ph.proxyID,
-		ProxyUserID:   "itas",
+		ProxyID:       ph.id,
+		ProxyName:     ph.name,
+		ProxyUserID:   uuid.NewString(),
 		ProxyUserIP:   r.RemoteAddr,
 		ProxyUserName: "itas",
 		Host:          strings.Split(r.URL.Host, ":")[0],
@@ -87,7 +105,7 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 		CreatedAt:     createdAt,
 	}
 
-	if err := ph.requestUsc.Save(context.Background(), &request); err != nil {
+	if err := ph.requestSvc.Save(context.Background(), &request); err != nil {
 		ph.l.Error("failed to save request", slogger.Err(err))
 		return
 	}
@@ -110,7 +128,7 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		targetHost += ":80"
 	}
 
-	targetConn, err := net.Dial("tcp", targetHost)
+	targetConn, err := net.DialTimeout("tcp", r.URL.Host, ph.timeout)
 	if err != nil {
 		ph.l.Error("connection failed", "address", r.URL.Host, "error", err.Error())
 		ph.writeRawResponse(clientConn, http.StatusInternalServerError, r)

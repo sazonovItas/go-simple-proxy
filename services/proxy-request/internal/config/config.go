@@ -5,7 +5,7 @@ import "time"
 type Config struct {
 	Env        string           `yaml:"env"         env:"ENV" env-default:"local"`
 	HTTPServer HTTPServerConfig `yaml:"http_server"`
-	RPCServer  RPCServerConfig  `yaml:"rpc_server"`
+	RPCServer  GRPCServerConfig `yaml:"rpc_server"`
 	Storage    StorageConfig    `yaml:"storage"`
 }
 
@@ -28,7 +28,7 @@ type HTTPServerConfig struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env:"HTTP_SERVER_IDLE_TIMEOUT" env-default:"30s"`
 }
 
-type RPCServerConfig struct {
+type GRPCServerConfig struct {
 	Address string        `yaml:"address" env:"RPC_SERVER_ADDRESS" env-default:":3223"`
 	Timeout time.Duration `yaml:"timeout" env:"RPC_SERVER_TIMEOUT" env-default:"30s"`
 }

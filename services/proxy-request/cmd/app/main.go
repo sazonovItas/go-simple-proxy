@@ -19,7 +19,7 @@ import (
 	requestrepo "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/pgrepo/request"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
 	grpcrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/handler/grpc/request"
-	requestsvc "github.com/sazonovItas/proxy-manager/proxy-request/internal/service/request"
+	requestusc "github.com/sazonovItas/proxy-manager/proxy-request/internal/usecase/request"
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
@@ -56,7 +56,7 @@ func main() {
 	// init request repo
 	// TODO: move to internal init
 	requestRepo := requestrepo.NewRequestRepository(cfg.Storage.TableName, db)
-	_ = requestsvc.NewRequestService(requestRepo)
+	_ = requestusc.NewRequestUsecase(requestRepo)
 
 	// init grpc handler
 	// TODO: move to internal init

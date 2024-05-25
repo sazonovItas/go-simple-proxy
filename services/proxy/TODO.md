@@ -15,4 +15,3 @@
 ## Tests
 
 - [ ] Add unit tests
-- [ ] Add more unit tests and normal benchmark tests to memory cache
