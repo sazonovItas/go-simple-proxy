@@ -4,6 +4,7 @@ go 1.22.2
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240521153332-1b93bc55c7d2
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.1

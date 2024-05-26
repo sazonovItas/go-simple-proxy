@@ -1,4 +1,4 @@
-package requestrepo
+package pgrequest
 
 import (
 	"context"

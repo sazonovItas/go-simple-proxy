@@ -11,7 +11,7 @@ import (
 )
 
 // TODO: do not save requests with upload and download equal to 0
-func (rh *RequestHandler) Save(
+func (rh *requestHandler) Save(
 	ctx context.Context,
 	in *requestv1.SaveRequest,
 ) (*requestv1.SaveResponse, error) {

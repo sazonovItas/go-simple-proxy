@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/grpc"
 
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
@@ -14,23 +15,27 @@ import (
 
 var ErrBadRequestUUID = errors.New("bad request uuid")
 
-type requestUsecase interface {
+type RequestUsecase interface {
 	Save(ctx context.Context, r *entity.Request) error
 	Request(ctx context.Context, id uuid.UUID) (*entity.Request, error)
 	Timestamp(ctx context.Context, timestamp time.Time, limit int) ([]entity.Request, error)
 }
 
-type RequestHandler struct {
+type requestHandler struct {
 	l          *slog.Logger
-	requestUsc requestUsecase
+	requestUsc RequestUsecase
 
 	requestv1.UnimplementedProxyRequestServiceServer
 }
 
-var _ requestv1.ProxyRequestServiceServer = (*RequestHandler)(nil)
+var _ requestv1.ProxyRequestServiceServer = (*requestHandler)(nil)
 
-func NewRequestHandler(logger *slog.Logger, requestUsc requestUsecase) *RequestHandler {
-	return &RequestHandler{
+func Register(srv *grpc.Server, handler *requestHandler) {
+	requestv1.RegisterProxyRequestServiceServer(srv, handler)
+}
+
+func New(logger *slog.Logger, requestUsc RequestUsecase) *requestHandler {
+	return &requestHandler{
 		l:          logger,
 		requestUsc: requestUsc,
 	}

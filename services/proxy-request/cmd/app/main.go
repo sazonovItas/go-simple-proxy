@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -16,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	requestrepo "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/pgrepo/request"
+	pgrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/pgrepo/request"
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
 	grpcrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/handler/grpc/request"
 	requestusc "github.com/sazonovItas/proxy-manager/proxy-request/internal/usecase/request"
@@ -26,7 +25,7 @@ import (
 func main() {
 	cfg, err := configutils.LoadConfigFromEnv[config.Config]()
 	if err != nil {
-		log.Fatalf("failed load config from env: %s", err.Error())
+		panic(err)
 	}
 
 	l := logger.NewSlogLogger(
@@ -35,8 +34,6 @@ func main() {
 	)
 	l.Info("init config", "config", cfg)
 
-	// connect to db
-	// TODO: move to internal init
 	db, err := postgresdb.Connect(
 		context.Background(),
 		cfg.Storage.Uri,
@@ -48,19 +45,14 @@ func main() {
 		},
 	)
 	if err != nil {
-		l.Error("failed connect to database", slogger.Err(err))
-		return
+		panic(err)
 	}
 	defer db.Close()
 
-	// init request repo
-	// TODO: move to internal init
-	requestRepo := requestrepo.NewRequestRepository(cfg.Storage.TableName, db)
+	requestRepo := pgrequest.New(cfg.Storage.TableName, db)
 	_ = requestusc.NewRequestUsecase(requestRepo)
 
-	// init grpc handler
-	// TODO: move to internal init
-	handler := grpcrequest.NewRequestHandler(l, requestRepo)
+	handler := grpcrequest.New(l, requestRepo)
 	grpcserver := grpc.NewServer(grpc.ConnectionTimeout(cfg.RPCServer.Timeout))
 	requestv1.RegisterProxyRequestServiceServer(grpcserver, handler)
 	reflection.Register(grpcserver)

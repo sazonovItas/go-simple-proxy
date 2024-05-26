@@ -1,4 +1,4 @@
-package requestrepo
+package pgrequest
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type RequestRepository struct {
 	tableName string
 }
 
-func NewRequestRepository(tableName string, db *postgresdb.DB) *RequestRepository {
+func New(tableName string, db *postgresdb.DB) *RequestRepository {
 	return &RequestRepository{
 		tableName: tableName,
 		db:        db,

@@ -12,7 +12,7 @@ import (
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
-func (rh *RequestHandler) ProxyRequest(
+func (rh *requestHandler) ProxyRequest(
 	ctx context.Context,
 	in *requestv1.GetRequest,
 ) (*requestv1.GetResponse, error) {
