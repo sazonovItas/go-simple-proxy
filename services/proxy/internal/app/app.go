@@ -10,9 +10,15 @@ import (
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
+	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
 )
+
+type proxyService interface {
+	Save(ctx context.Context, r *entity.Request) error
+	Login(ctx context.Context, username, passwordHash string) (*entity.User, error)
+}
 
 type App struct {
 	log *slog.Logger
@@ -24,9 +30,11 @@ type App struct {
 func New(
 	l *slog.Logger,
 	cfg *config.ProxyConfig,
+
+	proxySvc proxyService,
 ) *App {
 	handler := http.Handler(
-		proxyhandler.NewProxyHandler(cfg.ID, cfg.Name, cfg.DialTimeout, l, nil, nil),
+		proxyhandler.New(cfg.ID, cfg.Name, cfg.DialTimeout, l, proxySvc),
 	)
 
 	// Use middlewares

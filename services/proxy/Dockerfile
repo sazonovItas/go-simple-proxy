@@ -47,3 +47,4 @@ EXPOSE 8123
 
 # What the container should run when it is started.
 ENTRYPOINT [ "/bin/app" ]
+

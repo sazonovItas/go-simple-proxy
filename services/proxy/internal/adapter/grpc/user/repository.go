@@ -1,13 +1,13 @@
-package userrepo
+package grpcuser
 
-import "google.golang.org/grpc"
-
-type rpcUserRepository struct{}
+type grpcUserRepository interface{}
 
 type UserRepository struct {
-	rpcUserRepo rpcUserRepository
+	grpcUserRepo grpcUserRepository
 }
 
-func NewUserRepository(cli *grpc.ClientConn) *UserRepository {
-	return &UserRepository{}
+func New(userRepo grpcUserRepository) *UserRepository {
+	return &UserRepository{
+		grpcUserRepo: userRepo,
+	}
 }

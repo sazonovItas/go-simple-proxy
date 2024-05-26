@@ -1,4 +1,4 @@
-package requestrepo
+package grpcrequest
 
 import (
 	"context"
@@ -12,10 +12,6 @@ import (
 
 func (rr *RequestRepository) Save(ctx context.Context, r *entity.Request) error {
 	const op = "adapter.grpc.grpcrequest.Save"
-
-	if r.Upload == 0 || r.Download == 0 {
-		return nil
-	}
 
 	saveRequest := &requestv1.SaveRequest{
 		Request: &requestv1.ProxyRequest{
@@ -31,7 +27,7 @@ func (rr *RequestRepository) Save(ctx context.Context, r *entity.Request) error 
 		},
 	}
 
-	resp, err := rr.rpcRequestRepo.Save(ctx, saveRequest)
+	resp, err := rr.grpcRequestRepo.Save(ctx, saveRequest)
 	if err != nil {
 		return fmt.Errorf("%s: failed save proxy request: %w", op, err)
 	}

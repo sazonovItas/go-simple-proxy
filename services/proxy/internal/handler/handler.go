@@ -2,7 +2,6 @@ package proxyhandler
 
 import (
 	"context"
-	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -10,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
+	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
 )
 
 const (
@@ -21,12 +20,9 @@ const (
 	HTTPS = "https"
 )
 
-type requestService interface {
+type proxyService interface {
 	Save(ctx context.Context, r *entity.Request) error
-}
-
-type authService interface {
-	UserByName(ctx context.Context, name string)
+	Login(ctx context.Context, username, passwordHash string) (*entity.User, error)
 }
 
 type ProxyHandler struct {
@@ -34,42 +30,51 @@ type ProxyHandler struct {
 	name    string
 	timeout time.Duration
 
-	l *slog.Logger
-
-	requestSvc requestService
-	authSvc    authService
+	l        *slog.Logger
+	proxySvc proxyService
 }
 
-func NewProxyHandler(
+func New(
 	id, name string,
 	timeout time.Duration,
+
 	logger *slog.Logger,
-	requestSvc requestService,
-	authSvc authService,
+	proxySvc proxyService,
 ) *ProxyHandler {
 	return &ProxyHandler{
 		id:      id,
 		name:    name,
 		timeout: timeout,
 
-		l:          logger,
-		requestSvc: requestSvc,
-		authSvc:    authSvc,
+		l:        logger,
+		proxySvc: proxySvc,
 	}
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodConnect {
-		ph.handleHTTPS(w, r)
+	creds, _ := middleware.ProxyUserCreditanalsFromContext(r.Context())
+	user, err := ph.proxySvc.Login(r.Context(), creds.Username, creds.Password)
+	if err != nil {
+		middleware.ProxyBasicAuthFailed(w, "")
 		return
 	}
 
-	ph.handleHTTP(w, r)
+	if r.Method == http.MethodConnect {
+		ph.handleHTTPS(w, r, user)
+		return
+	}
+
+	if len(strings.Split(r.URL.Host, ":")) == 1 {
+		r.URL.Host += ":80"
+	}
+	ph.handleHTTP(w, r, user)
 }
 
-func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
-	createdAt := time.Now()
-
+func (ph *ProxyHandler) handleHTTPS(
+	w http.ResponseWriter,
+	r *http.Request,
+	userCreds *entity.User,
+) {
 	rc := http.NewResponseController(w)
 	_ = rc.EnableFullDuplex()
 
@@ -91,27 +96,24 @@ func (ph *ProxyHandler) handleHTTPS(w http.ResponseWriter, r *http.Request) {
 
 	ph.writeRawResponse(clientConn, http.StatusOK, r)
 
+	createdAt := time.Now()
 	upload, download := ph.transfering(clientConn, targetConn)
-
 	request := entity.Request{
 		ProxyID:       ph.id,
 		ProxyName:     ph.name,
-		ProxyUserID:   uuid.NewString(),
+		ProxyUserID:   userCreds.ID,
 		ProxyUserIP:   r.RemoteAddr,
-		ProxyUserName: "itas",
+		ProxyUserName: userCreds.Username,
 		Host:          strings.Split(r.URL.Host, ":")[0],
 		Upload:        upload,
 		Download:      download,
 		CreatedAt:     createdAt,
 	}
 
-	if err := ph.requestSvc.Save(context.Background(), &request); err != nil {
-		ph.l.Error("failed to save request", slogger.Err(err))
-		return
-	}
+	ph.SaveRequest(context.Background(), &request)
 }
 
-func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
+func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userCreds *entity.User) {
 	rc := http.NewResponseController(w)
 	_ = rc.EnableFullDuplex()
 
@@ -122,11 +124,6 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer clientConn.Close()
-
-	targetHost := r.URL.Host
-	if len(strings.Split(targetHost, ":")) == 1 {
-		targetHost += ":80"
-	}
 
 	targetConn, err := net.DialTimeout("tcp", r.URL.Host, ph.timeout)
 	if err != nil {
@@ -150,28 +147,27 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	createdAt := time.Now()
+
 	upload, download := ph.transfering(clientConn, targetConn)
-	_, _ = upload, download
+	request := entity.Request{
+		ProxyID:       ph.id,
+		ProxyName:     ph.name,
+		ProxyUserID:   userCreds.ID,
+		ProxyUserIP:   r.RemoteAddr,
+		ProxyUserName: userCreds.Username,
+		Host:          strings.Split(r.URL.Host, ":")[0],
+		Upload:        upload,
+		Download:      download,
+		CreatedAt:     createdAt,
+	}
+
+	ph.SaveRequest(context.Background(), &request)
 }
 
-func (ph *ProxyHandler) transfering(clientConn, targetConn net.Conn) (upload, download int64) {
-	quitch := make(chan struct{})
-	defer close(quitch)
-
-	go func() {
-		upload, _ = io.Copy(targetConn, clientConn)
-		targetConn.Close()
-		quitch <- struct{}{}
-	}()
-
-	download, _ = io.Copy(clientConn, targetConn)
-	<-quitch
-
-	return
-}
-
-func (ph *ProxyHandler) writeRawResponse(conn net.Conn, statusCode int, r *http.Request) {
-	if err := WriteRawResponse(conn, statusCode, r); err != nil {
-		ph.l.Error("writing response", "error", err.Error())
+func (ph *ProxyHandler) SaveRequest(ctx context.Context, r *entity.Request) {
+	if err := ph.proxySvc.Save(ctx, r); err != nil {
+		ph.l.Error("failed to save request", slogger.Err(err))
+		return
 	}
 }

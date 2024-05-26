@@ -1,4 +1,4 @@
-package requestrepo
+package grpcrequest
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type rpcRequestRepository interface {
+type grpcRequestRepository interface {
 	Save(
 		ctx context.Context,
 		in *requestv1.SaveRequest,
@@ -16,11 +16,11 @@ type rpcRequestRepository interface {
 }
 
 type RequestRepository struct {
-	rpcRequestRepo rpcRequestRepository
+	grpcRequestRepo grpcRequestRepository
 }
 
-func NewRequestRepository(cli *grpc.ClientConn) *RequestRepository {
+func New(grpcRequestRepo grpcRequestRepository) *RequestRepository {
 	return &RequestRepository{
-		rpcRequestRepo: requestv1.NewProxyRequestServiceClient(cli),
+		grpcRequestRepo: grpcRequestRepo,
 	}
 }
