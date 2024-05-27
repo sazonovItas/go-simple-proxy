@@ -9,13 +9,13 @@ import (
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 )
 
-func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) error {
+func (rr *requestRepository) Save(ctx context.Context, r *entity.Request) error {
 	const op = "adapter.pgrepo.request.Save"
 
 	const query = `INSERT INTO %s 
-		(id, proxy_id, proxy_name, proxy_user_id, proxy_user_ip, proxy_user_name, host, upload, download, created_at) 
+		(id, user_id, proxy_id, remote_ip, host, upload, download, created_at) 
 	VALUES 
-		(:id, :proxy_id, :proxy_name, :proxy_user_id, :proxy_user_ip, :proxy_user_name, :host, :upload, :download, :created_at)`
+		(:id, :user_id, :proxy_id, :remote_ip, :host, :upload, :download, :created_at)`
 
 	stmt, err := rr.db.PrepareNamedContext(ctx, rr.table(query))
 	if err != nil {
@@ -23,10 +23,10 @@ func (rr *RequestRepository) Save(ctx context.Context, request *entity.Request) 
 	}
 	defer stmt.Close()
 
-	request.ID = uuid.New()
-	_, err = stmt.ExecContext(ctx, request)
+	r.ID = uuid.New()
+	_, err = stmt.ExecContext(ctx, r)
 	if err != nil {
-		return fmt.Errorf("%s: failed to exec statement: %w", op, err)
+		return fmt.Errorf("%s: failed to save request: %w", op, err)
 	}
 
 	return nil

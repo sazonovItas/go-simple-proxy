@@ -79,7 +79,8 @@ func (a *App) Run() error {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	a.log.Info("grpc server started", slog.String("address", l.Addr().String()))
+	a.log.With(slog.String("op", op)).
+		Info("grpc server started", slog.String("address", l.Addr().String()))
 
 	if err := a.grpcServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -91,8 +92,7 @@ func (a *App) Run() error {
 func (a *App) Stop() {
 	const op = "grpcapp.Stop"
 
-	a.log.With(slog.String("op", op)).
-		Info("stopping gRPC server", slog.String("address", a.cfg.Address))
+	a.log.With(slog.String("op", op)).Info("stopping gRPC server")
 
 	a.grpcServer.GracefulStop()
 }

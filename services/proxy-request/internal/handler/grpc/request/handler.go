@@ -18,7 +18,7 @@ var ErrBadRequestUUID = errors.New("bad request uuid")
 type RequestUsecase interface {
 	Save(ctx context.Context, r *entity.Request) error
 	Request(ctx context.Context, id uuid.UUID) (*entity.Request, error)
-	Timestamp(ctx context.Context, timestamp time.Time, limit int) ([]entity.Request, error)
+	Timestamp(ctx context.Context, from time.Time, to time.Time) ([]entity.Request, error)
 }
 
 type requestHandler struct {

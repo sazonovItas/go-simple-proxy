@@ -15,15 +15,13 @@ func (rr *RequestRepository) Save(ctx context.Context, r *entity.Request) error 
 
 	saveRequest := &requestv1.SaveRequest{
 		Request: &requestv1.ProxyRequest{
-			ProxyId:       r.ProxyID,
-			ProxyName:     r.ProxyName,
-			ProxyUserId:   r.ProxyUserID,
-			ProxyUserIp:   r.ProxyUserIP,
-			ProxyUserName: r.ProxyUserName,
-			Host:          r.Host,
-			Upload:        r.Upload,
-			Download:      r.Download,
-			CreatedAt:     timestamppb.New(r.CreatedAt),
+			UserId:    r.UserID,
+			ProxyId:   r.ProxyID,
+			RemoteIp:  r.RemoteIP,
+			Host:      r.Host,
+			Upload:    r.Upload,
+			Download:  r.Download,
+			CreatedAt: timestamppb.New(r.CreatedAt),
 		},
 	}
 

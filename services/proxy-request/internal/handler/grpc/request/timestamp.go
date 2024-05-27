@@ -11,19 +11,19 @@ import (
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
-func (ph *requestHandler) ProxyRequestByTimestamp(
+func (ph *requestHandler) Timestamp(
 	ctx context.Context,
 	in *requestv1.TimestampRequest,
 ) (*requestv1.TimestampResponse, error) {
-	if in.Limit <= 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "limit should be greater than 0")
+	if in.From == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "from timestamp is required")
 	}
 
-	if in.Timestamp == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "timestamp is required")
+	if in.To == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "to timestamp is required")
 	}
 
-	requests, err := ph.requestUsc.Timestamp(ctx, in.Timestamp.AsTime(), int(in.Limit))
+	requests, err := ph.requestUsc.Timestamp(ctx, in.From.AsTime(), in.To.AsTime())
 	if err != nil {
 		switch {
 		case errors.Is(err, adapter.ErrRequestNotFound):
@@ -34,8 +34,8 @@ func (ph *requestHandler) ProxyRequestByTimestamp(
 	}
 
 	proxyRequests := make([]*requestv1.ProxyRequest, 0, len(requests))
-	for _, r := range requests {
-		proxyRequests = append(proxyRequests, ParseProxyRequest(&r))
+	for i := range requests {
+		proxyRequests = append(proxyRequests, ParseProxyRequest(&requests[i]))
 	}
 
 	return &requestv1.TimestampResponse{Requests: proxyRequests}, nil

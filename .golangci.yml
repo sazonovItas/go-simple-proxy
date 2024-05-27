@@ -8,14 +8,12 @@ linters:
     - errcheck
     - gosimple
     - govet
-    # - unused
     - ineffassign
     - staticcheck
     - gosec
 
   presets:
     - bugs
-    # - comment
 
   fast: true
 

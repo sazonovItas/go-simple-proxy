@@ -12,7 +12,7 @@ import (
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
-func (rh *requestHandler) ProxyRequest(
+func (rh *requestHandler) Request(
 	ctx context.Context,
 	in *requestv1.GetRequest,
 ) (*requestv1.GetResponse, error) {
@@ -28,7 +28,7 @@ func (rh *requestHandler) ProxyRequest(
 	r, err := rh.requestUsc.Request(ctx, id)
 	if err != nil {
 		if errors.Is(err, adapter.ErrRequestNotFound) {
-			return nil, status.Errorf(codes.NotFound, "no proxy request found")
+			return nil, status.Errorf(codes.NotFound, "no proxy request is found")
 		}
 
 		return nil, status.Errorf(codes.Internal, "failed to get proxy request")

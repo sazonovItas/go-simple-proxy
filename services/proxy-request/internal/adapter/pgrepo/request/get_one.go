@@ -12,8 +12,8 @@ import (
 	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
 )
 
-func (rr *RequestRepository) Request(ctx context.Context, id uuid.UUID) (*entity.Request, error) {
-	const op = "adapter.pgrepo.request.GetByID"
+func (rr *requestRepository) Request(ctx context.Context, id uuid.UUID) (*entity.Request, error) {
+	const op = "adapter.pgrepo.request.Request"
 
 	const query = "SELECT * FROM %s WHERE id=$1"
 
@@ -30,7 +30,7 @@ func (rr *RequestRepository) Request(ctx context.Context, id uuid.UUID) (*entity
 		case errors.Is(err, sql.ErrNoRows):
 			return nil, adapter.ErrRequestNotFound
 		default:
-			return nil, fmt.Errorf("%s: failed exec statement: %w", op, err)
+			return nil, fmt.Errorf("%s: failed get request: %w", op, err)
 		}
 	}
 

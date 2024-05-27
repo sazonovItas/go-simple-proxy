@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -18,6 +19,7 @@ func Logger(l *slog.Logger) func(next http.Handler) http.Handler {
 			t2 := time.Since(t1)
 
 			defer log.Info("request completed",
+				slog.String("protocol", fmt.Sprintf("HTTP/%d.%d", r.ProtoMajor, r.ProtoMinor)),
 				slog.String("method", r.Method),
 				slog.String("host", r.URL.Host),
 				slog.String("remote_addr", r.RemoteAddr),

@@ -7,35 +7,33 @@ import "google/protobuf/timestamp.proto";
 service ProxyRequestService {
   rpc Save(SaveRequest) returns (SaveResponse) {}
 
-  rpc ProxyRequest(GetRequest) returns (GetResponse) {}
+  rpc Request(GetRequest) returns (GetResponse) {}
 
-  rpc ProxyRequestByTimestamp(TimestampRequest) returns (TimestampResponse) {}
+  rpc Timestamp(TimestampRequest) returns (TimestampResponse) {}
 }
 
-message TimestampRequest {
-  google.protobuf.Timestamp timestamp = 1;
-  int32 limit = 2;
-}
+message SaveRequest { ProxyRequest request = 1; }
+
+message SaveResponse { string id = 1; }
 
 message TimestampResponse { repeated ProxyRequest requests = 1; }
+
+message TimestampRequest {
+  google.protobuf.Timestamp from = 1;
+  google.protobuf.Timestamp to = 2;
+}
 
 message GetRequest { string id = 1; }
 
 message GetResponse { ProxyRequest request = 1; }
 
-message SaveResponse { string id = 1; }
-
-message SaveRequest { ProxyRequest request = 1; }
-
 message ProxyRequest {
   string id = 1;
-  string proxy_id = 2;
-  string proxy_name = 3;
-  string proxy_user_id = 4;
-  string proxy_user_ip = 5;
-  string proxy_user_name = 6;
-  string host = 7;
-  int64 upload = 8;
-  int64 download = 9;
-  google.protobuf.Timestamp created_at = 10;
+  string user_id = 2;
+  string proxy_id = 3;
+  string remote_ip = 4;
+  string host = 5;
+  int64 upload = 6;
+  int64 download = 7;
+  google.protobuf.Timestamp created_at = 8;
 }

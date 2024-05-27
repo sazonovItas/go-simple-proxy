@@ -1,1 +1,1 @@
-DROP TABLE proxy_requests CASCADE;
+DROP TABLE proxy_requests;

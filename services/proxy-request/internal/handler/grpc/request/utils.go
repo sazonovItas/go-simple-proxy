@@ -21,35 +21,31 @@ func ParseRequest(r *requestv1.ProxyRequest) (*entity.Request, error) {
 		return nil, ErrBadProxyIdFormat
 	}
 
-	proxyUserId, err := uuid.Parse(r.ProxyUserId)
+	userId, err := uuid.Parse(r.UserId)
 	if err != nil {
 		return nil, ErrBadProxyUserIdFormat
 	}
 
 	return &entity.Request{
-		ProxyID:       proxyId,
-		ProxyName:     r.ProxyName,
-		ProxyUserID:   proxyUserId,
-		ProxyUserIP:   r.ProxyUserIp,
-		ProxyUserName: r.ProxyUserName,
-		Host:          r.Host,
-		Upload:        r.Upload,
-		Download:      r.Download,
-		CreatedAt:     r.CreatedAt.AsTime(),
+		UserID:    userId,
+		ProxyID:   proxyId,
+		RemoteIP:  r.RemoteIp,
+		Host:      r.Host,
+		Upload:    r.Upload,
+		Download:  r.Download,
+		CreatedAt: r.CreatedAt.AsTime(),
 	}, nil
 }
 
 func ParseProxyRequest(r *entity.Request) *requestv1.ProxyRequest {
 	return &requestv1.ProxyRequest{
-		Id:            r.ID.String(),
-		ProxyId:       r.ProxyID.String(),
-		ProxyName:     r.ProxyName,
-		ProxyUserId:   r.ProxyUserID.String(),
-		ProxyUserIp:   r.ProxyUserIP,
-		ProxyUserName: r.ProxyUserName,
-		Host:          r.Host,
-		Upload:        r.Upload,
-		Download:      r.Download,
-		CreatedAt:     timestamppb.New(r.CreatedAt),
+		Id:        r.ID.String(),
+		UserId:    r.UserID.String(),
+		ProxyId:   r.ProxyID.String(),
+		RemoteIp:  r.RemoteIP,
+		Host:      r.Host,
+		Upload:    r.Upload,
+		Download:  r.Download,
+		CreatedAt: timestamppb.New(r.CreatedAt),
 	}
 }

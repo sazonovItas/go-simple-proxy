@@ -10,17 +10,16 @@ import (
 	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 )
 
-// TODO: do not save requests with upload and download equal to 0
 func (rh *requestHandler) Save(
 	ctx context.Context,
 	in *requestv1.SaveRequest,
 ) (*requestv1.SaveResponse, error) {
-	if in.Request.ProxyId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "proxy id is required")
+	if in.Request.UserId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "proxy user id is required")
 	}
 
-	if in.Request.ProxyUserId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "proxy user id is required")
+	if in.Request.ProxyId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "proxy id is required")
 	}
 
 	proxyRequest, err := ParseRequest(in.Request)

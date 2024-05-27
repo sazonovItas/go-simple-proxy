@@ -7,34 +7,65 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
+	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
+	grpcrequest "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/request"
+	grpcuser "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/user"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
-	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
+	proxysvc "github.com/sazonovItas/proxy-manager/services/proxy/internal/service/proxy"
 )
-
-type proxyService interface {
-	Save(ctx context.Context, r *entity.Request) error
-	Login(ctx context.Context, username, passwordHash string) (*entity.User, error)
-}
 
 type App struct {
 	log *slog.Logger
 
-	cfg         *config.ProxyConfig
+	cfg         *config.Config
 	proxyServer *http.Server
+
+	cliUser    *grpc.ClientConn
+	cliRequest *grpc.ClientConn
 }
 
 func New(
 	l *slog.Logger,
-	cfg *config.ProxyConfig,
-
-	proxySvc proxyService,
+	cfg *config.Config,
 ) *App {
+	cliRequest, err := grpc.NewClient(
+		cfg.Services.RequestServiceAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	cliUser, err := grpc.NewClient(
+		cfg.Services.UserServiceAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	requestRepo := grpcrequest.New(requestv1.NewProxyRequestServiceClient(cliRequest))
+	userRepo := grpcuser.New(nil)
+
+	if cfg.Proxy.ID == "" {
+		cfg.Proxy.ID = uuid.NewString()
+	}
+
 	handler := http.Handler(
-		proxyhandler.New(cfg.ID, cfg.Name, cfg.DialTimeout, l, proxySvc),
+		proxyhandler.New(
+			cfg.Proxy.ID,
+			cfg.Proxy.Name,
+			cfg.Proxy.DialTimeout,
+			l,
+			proxysvc.New(requestRepo, userRepo),
+		),
 	)
 
 	// Use middlewares
@@ -43,9 +74,9 @@ func New(
 	handler = middleware.Panic(l)(handler)
 
 	proxyServer := &http.Server{
-		Addr:              fmt.Sprintf(":%d", cfg.Port),
+		Addr:              fmt.Sprintf(":%d", cfg.Proxy.Port),
 		Handler:           handler,
-		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
+		ReadHeaderTimeout: cfg.Proxy.ReadHeaderTimeout,
 	}
 
 	return &App{
@@ -53,6 +84,9 @@ func New(
 
 		cfg:         cfg,
 		proxyServer: proxyServer,
+
+		cliUser:    cliUser,
+		cliRequest: cliRequest,
 	}
 }
 
@@ -79,10 +113,13 @@ func (a *App) Stop() {
 	l := a.log.With(slog.String("op", op))
 	l.Info("stopping proxy server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.ShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.Proxy.ShutdownTimeout)
 	defer cancel()
 
 	if err := a.proxyServer.Shutdown(ctx); err != nil {
 		l.Error("stopping proxy server", slogger.Err(err))
 	}
+
+	a.cliRequest.Close()
+	a.cliUser.Close()
 }

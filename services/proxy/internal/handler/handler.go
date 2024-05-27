@@ -20,7 +20,7 @@ const (
 	HTTPS = "https"
 )
 
-type proxyService interface {
+type ProxyService interface {
 	Save(ctx context.Context, r *entity.Request) error
 	Login(ctx context.Context, username, passwordHash string) (*entity.User, error)
 }
@@ -31,7 +31,7 @@ type ProxyHandler struct {
 	timeout time.Duration
 
 	l        *slog.Logger
-	proxySvc proxyService
+	proxySvc ProxyService
 }
 
 func New(
@@ -39,7 +39,7 @@ func New(
 	timeout time.Duration,
 
 	logger *slog.Logger,
-	proxySvc proxyService,
+	proxySvc ProxyService,
 ) *ProxyHandler {
 	return &ProxyHandler{
 		id:      id,
@@ -99,15 +99,13 @@ func (ph *ProxyHandler) handleHTTPS(
 	createdAt := time.Now()
 	upload, download := ph.transfering(clientConn, targetConn)
 	request := entity.Request{
-		ProxyID:       ph.id,
-		ProxyName:     ph.name,
-		ProxyUserID:   userCreds.ID,
-		ProxyUserIP:   r.RemoteAddr,
-		ProxyUserName: userCreds.Username,
-		Host:          strings.Split(r.URL.Host, ":")[0],
-		Upload:        upload,
-		Download:      download,
-		CreatedAt:     createdAt,
+		UserID:    userCreds.ID,
+		ProxyID:   ph.id,
+		RemoteIP:  r.RemoteAddr,
+		Host:      strings.Split(r.URL.Host, ":")[0],
+		Upload:    upload,
+		Download:  download,
+		CreatedAt: createdAt,
 	}
 
 	ph.SaveRequest(context.Background(), &request)
@@ -148,18 +146,15 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userC
 	}
 
 	createdAt := time.Now()
-
 	upload, download := ph.transfering(clientConn, targetConn)
 	request := entity.Request{
-		ProxyID:       ph.id,
-		ProxyName:     ph.name,
-		ProxyUserID:   userCreds.ID,
-		ProxyUserIP:   r.RemoteAddr,
-		ProxyUserName: userCreds.Username,
-		Host:          strings.Split(r.URL.Host, ":")[0],
-		Upload:        upload,
-		Download:      download,
-		CreatedAt:     createdAt,
+		UserID:    userCreds.ID,
+		ProxyID:   ph.id,
+		RemoteIP:  r.RemoteAddr,
+		Host:      strings.Split(r.URL.Host, ":")[0],
+		Upload:    upload,
+		Download:  download,
+		CreatedAt: createdAt,
 	}
 
 	ph.SaveRequest(context.Background(), &request)
