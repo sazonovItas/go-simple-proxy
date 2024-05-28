@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
-	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -51,7 +50,7 @@ func New(
 		panic(err)
 	}
 
-	requestRepo := grpcrequest.New(requestv1.NewProxyRequestServiceClient(cliRequest))
+	requestRepo := grpcrequest.New(cliRequest)
 	userRepo := grpcuser.New(nil)
 
 	if cfg.Proxy.ID == "" {

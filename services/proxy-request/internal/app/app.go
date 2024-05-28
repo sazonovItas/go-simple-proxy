@@ -6,10 +6,10 @@ import (
 
 	"github.com/sazonovItas/proxy-manager/pkg/postgresdb"
 
-	pgrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter/pgrepo/request"
-	grpcapp "github.com/sazonovItas/proxy-manager/proxy-request/internal/app/grpc"
-	httpapp "github.com/sazonovItas/proxy-manager/proxy-request/internal/app/http"
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
+	pgrequest "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/adapter/pgrepo/request"
+	grpcapp "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/app/grpc"
+	httpapp "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/app/http"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/config"
 )
 
 type App struct {

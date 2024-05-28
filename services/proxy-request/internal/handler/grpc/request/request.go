@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter"
-	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/adapter"
+	requestv1 "github.com/sazonovItas/proxy-manager/services/proxy-request/pkg/pb/request/v1"
 )
 
 func (rh *requestHandler) Request(

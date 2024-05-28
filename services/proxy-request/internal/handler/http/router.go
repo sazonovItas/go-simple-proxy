@@ -8,7 +8,7 @@ import (
 	prettylogger "github.com/rdbell/echo-pretty-logger"
 )
 
-func New(timeout time.Duration) *echo.Echo {
+func New(timeout time.Duration, usePrettyLogger bool) *echo.Echo {
 	e := echo.New()
 
 	e.Pre(middleware.AddTrailingSlash())
@@ -17,10 +17,8 @@ func New(timeout time.Duration) *echo.Echo {
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{Timeout: timeout}))
 	e.Use(middleware.RequestID())
 
-	usePrettyLogger := true
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// Condition to decide which logger to use
 			if usePrettyLogger {
 				return prettylogger.Logger(next)(c)
 			}

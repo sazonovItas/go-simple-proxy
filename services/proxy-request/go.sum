@@ -54,8 +54,8 @@ github.com/rdbell/echo-pretty-logger v1.0.0 h1:mOT5Tk3VErvVSrpVzwuzOcW0S48+Vb/ju
 github.com/rdbell/echo-pretty-logger v1.0.0/go.mod h1:uvJhQDUtOCsyhRGuYcfI2RICdTUdIahSwv37kExhZKQ=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
-github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240521153332-1b93bc55c7d2 h1:YgQv/DQCaIQhgIpp2n6rWudXBQTVXOqmbMNYQQPwj2Q=
-github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240521153332-1b93bc55c7d2/go.mod h1:eGRHrfdgVuJcjOfiKuMuz9kVGYSIvfPuDR0eoqO55GM=
+github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240527215401-a081d59fc111 h1:Qo8obo8VvPZZEdU7+/KKbMzReqWtPNZc5l0amIGakeY=
+github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240527215401-a081d59fc111/go.mod h1:NdFdVjnyV1yHBM9Uq0SJTNJOARzu2jzpUtstXlw8eqo=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

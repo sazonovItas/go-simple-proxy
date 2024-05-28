@@ -1,4 +1,4 @@
-module github.com/sazonovItas/proxy-manager/proxy-request
+module github.com/sazonovItas/proxy-manager/services/proxy-request
 
 go 1.22.2
 
@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/rdbell/echo-pretty-logger v1.0.0
-	github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240521153332-1b93bc55c7d2
+	github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240527215401-a081d59fc111
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.1
 )

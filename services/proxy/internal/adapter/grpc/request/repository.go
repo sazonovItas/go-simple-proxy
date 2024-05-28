@@ -3,8 +3,9 @@ package grpcrequest
 import (
 	"context"
 
-	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 	"google.golang.org/grpc"
+
+	requestv1 "github.com/sazonovItas/proxy-manager/services/proxy-request/pkg/pb/request/v1"
 )
 
 type grpcRequestRepository interface {
@@ -19,8 +20,8 @@ type RequestRepository struct {
 	grpcRequestRepo grpcRequestRepository
 }
 
-func New(grpcRequestRepo grpcRequestRepository) *RequestRepository {
+func New(cli *grpc.ClientConn) *RequestRepository {
 	return &RequestRepository{
-		grpcRequestRepo: grpcRequestRepo,
+		grpcRequestRepo: requestv1.NewProxyRequestServiceClient(cli),
 	}
 }

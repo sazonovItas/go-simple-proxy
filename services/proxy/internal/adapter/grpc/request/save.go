@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	requestv1 "github.com/sazonovItas/proxy-manager/services/proxy-request/pkg/pb/request/v1"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
 )
 

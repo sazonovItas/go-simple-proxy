@@ -9,8 +9,8 @@ import (
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
 	"github.com/sazonovItas/proxy-manager/pkg/logger"
 
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/app"
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/app"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/config"
 )
 
 func main() {

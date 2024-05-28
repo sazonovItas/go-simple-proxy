@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
-	requestv1 "github.com/sazonovItas/proxy-manager/proxy-request/pkg/pb/request/v1"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/entity"
+	requestv1 "github.com/sazonovItas/proxy-manager/services/proxy-request/pkg/pb/request/v1"
 )
 
 var ErrBadRequestUUID = errors.New("bad request uuid")

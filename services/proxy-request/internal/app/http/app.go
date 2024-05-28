@@ -9,9 +9,9 @@ import (
 
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
-	router "github.com/sazonovItas/proxy-manager/proxy-request/internal/handler/http"
-	httpv1 "github.com/sazonovItas/proxy-manager/proxy-request/internal/handler/http/api/v1"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/config"
+	router "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/handler/http"
+	httpv1 "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/handler/http/api/v1"
 )
 
 type App struct {
@@ -22,7 +22,7 @@ type App struct {
 }
 
 func New(cfg *config.HTTPServerConfig, l *slog.Logger, requestUsc httpv1.RequestUsecase) *App {
-	router := router.New(cfg.Timeout)
+	router := router.New(cfg.Timeout, true)
 
 	handler := httpv1.NewHandler(requestUsc)
 	handler.Init(router.Group("/api"))

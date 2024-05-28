@@ -7,8 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/adapter"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/adapter"
 )
 
 type requestById struct {

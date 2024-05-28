@@ -12,8 +12,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/config"
-	grpcrequest "github.com/sazonovItas/proxy-manager/proxy-request/internal/handler/grpc/request"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/config"
+	grpcrequest "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/handler/grpc/request"
 )
 
 type App struct {

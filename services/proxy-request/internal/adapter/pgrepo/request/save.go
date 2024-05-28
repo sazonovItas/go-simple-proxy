@@ -5,8 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-
-	"github.com/sazonovItas/proxy-manager/proxy-request/internal/entity"
+	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/entity"
 )
 
 func (rr *requestRepository) Save(ctx context.Context, r *entity.Request) error {
