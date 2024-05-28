@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package auth;
+option go_package = "auth/v1;authv1";
+
+service Auth {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+
+  rpc VerifyEmail(VerifyEmailRequest) returns (Empty) {}
+
+  rpc ResetPassword(ResetPasswordRequest) returns (Empty) {}
+
+  rpc UpdatePassword(UpdatePasswordRequest) returns (Empty) {}
+}
+
+message RegisterRequest {
+  string email = 1;
+  string login = 2;
+  string password = 3;
+}
+
+message RegisterResponse { string id = 1; }
+
+message LoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginResponse { string token = 1; }
+
+message VerifyEmailRequest { string token = 1; }
+
+message ResetPasswordRequest { string email = 1; }
+
+message UpdatePasswordRequest {
+  string token = 1;
+  string password = 2;
+}
+
+message Empty {};

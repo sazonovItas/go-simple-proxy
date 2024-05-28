@@ -3,10 +3,10 @@ SERVICE_NAME=proxy-request-service
 
 .PHONY: build run 
 build:
-	go build -o ./bin/app ./cmd/app
+	go build -o ./bin/$(SERVICE_NAME) ./cmd/app
 
 run: build
-	DATABASE_URI='postgres://proxy_manager_user:proxy_manager_password@127.0.0.1:5432/proxy_manager_db?sslmode=disable' ./bin/app
+	DATABASE_URI='postgres://proxy_manager_user:proxy_manager_password@127.0.0.1:5432/proxy_manager_db?sslmode=disable' ./bin/$(SERVICE_NAME)
 
 .PHONY: proto
 proto:

@@ -1,3 +1,7 @@
 .PHONY: lint
 lint:
-	golangci-lint run --config .golangci.yml ./pkg/... ./services/proxy/... ./services/proxy-manager/... ./services/proxy-request/...
+	./scripts/lint.sh
+
+.PHONY: clean_none_images
+clean_none:
+	./scripts/clean_none_images.sh

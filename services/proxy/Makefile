@@ -3,10 +3,10 @@ SERVICE_NAME=go-proxy
 
 .PHONY: build run 
 build:
-	go build -o ./bin/app ./cmd/app
+	go build -o ./bin/$(SERVICE_NAME) ./cmd/app
 
 run: build
-	./bin/app
+	./bin/$(SERVICE_NAME)
 
 .PHONY: docker-image docker-container
 docker-image:

@@ -25,6 +25,8 @@ type ProxyRequestServiceClient interface {
 	Save(ctx context.Context, in *SaveRequest, opts ...grpc.CallOption) (*SaveResponse, error)
 	Request(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Timestamp(ctx context.Context, in *TimestampRequest, opts ...grpc.CallOption) (*TimestampResponse, error)
+	TimestampAndUserId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error)
+	TimestampAndProxyId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error)
 }
 
 type proxyRequestServiceClient struct {
@@ -62,6 +64,24 @@ func (c *proxyRequestServiceClient) Timestamp(ctx context.Context, in *Timestamp
 	return out, nil
 }
 
+func (c *proxyRequestServiceClient) TimestampAndUserId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error) {
+	out := new(TimestampAndIdResponse)
+	err := c.cc.Invoke(ctx, "/request.ProxyRequestService/TimestampAndUserId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *proxyRequestServiceClient) TimestampAndProxyId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error) {
+	out := new(TimestampAndIdResponse)
+	err := c.cc.Invoke(ctx, "/request.ProxyRequestService/TimestampAndProxyId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProxyRequestServiceServer is the server API for ProxyRequestService service.
 // All implementations must embed UnimplementedProxyRequestServiceServer
 // for forward compatibility
@@ -69,6 +89,8 @@ type ProxyRequestServiceServer interface {
 	Save(context.Context, *SaveRequest) (*SaveResponse, error)
 	Request(context.Context, *GetRequest) (*GetResponse, error)
 	Timestamp(context.Context, *TimestampRequest) (*TimestampResponse, error)
+	TimestampAndUserId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error)
+	TimestampAndProxyId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error)
 	mustEmbedUnimplementedProxyRequestServiceServer()
 }
 
@@ -84,6 +106,12 @@ func (UnimplementedProxyRequestServiceServer) Request(context.Context, *GetReque
 }
 func (UnimplementedProxyRequestServiceServer) Timestamp(context.Context, *TimestampRequest) (*TimestampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Timestamp not implemented")
+}
+func (UnimplementedProxyRequestServiceServer) TimestampAndUserId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TimestampAndUserId not implemented")
+}
+func (UnimplementedProxyRequestServiceServer) TimestampAndProxyId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TimestampAndProxyId not implemented")
 }
 func (UnimplementedProxyRequestServiceServer) mustEmbedUnimplementedProxyRequestServiceServer() {}
 
@@ -152,6 +180,42 @@ func _ProxyRequestService_Timestamp_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProxyRequestService_TimestampAndUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TimestampAndIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProxyRequestServiceServer).TimestampAndUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/request.ProxyRequestService/TimestampAndUserId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProxyRequestServiceServer).TimestampAndUserId(ctx, req.(*TimestampAndIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProxyRequestService_TimestampAndProxyId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TimestampAndIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProxyRequestServiceServer).TimestampAndProxyId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/request.ProxyRequestService/TimestampAndProxyId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProxyRequestServiceServer).TimestampAndProxyId(ctx, req.(*TimestampAndIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProxyRequestService_ServiceDesc is the grpc.ServiceDesc for ProxyRequestService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +234,14 @@ var ProxyRequestService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Timestamp",
 			Handler:    _ProxyRequestService_Timestamp_Handler,
+		},
+		{
+			MethodName: "TimestampAndUserId",
+			Handler:    _ProxyRequestService_TimestampAndUserId_Handler,
+		},
+		{
+			MethodName: "TimestampAndProxyId",
+			Handler:    _ProxyRequestService_TimestampAndProxyId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

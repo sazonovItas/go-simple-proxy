@@ -30,6 +30,7 @@ func New(cfg *config.HTTPServerConfig, l *slog.Logger, requestUsc httpv1.Request
 	srv := &http.Server{
 		Handler:     router,
 		Addr:        cfg.Address,
+		ReadTimeout: cfg.Timeout,
 		IdleTimeout: cfg.IdleTimeout,
 	}
 

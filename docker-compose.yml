@@ -1,53 +1,67 @@
 version: "3.9"
 
 services:
-  self-controlled-proxy:
-    build:
-      context: ./services/proxy/
-
-    container_name: self-controlled-proxy
-    restart: unless-stopped
-
-    ports:
-      - 127.0.0.1:9123:8123
-    environment:
-      - ENV=dev
-      - HOST=0.0.0.0
-      - PORT=8123
-      - READ_HEADER_TIMEOUT=1s
-      - READ_TIMEOUT=60s
-      - WRITE_TIMEOUT=60s
-
-  # proxy-manager for starting other proxy and
-  proxy-manager:
-    build:
-      context: ./services/proxy-manager/
-
-    container_name: proxy-manager-service
-    restart: unless-stopped
-
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:rw"
-      - "./services/proxy-manager/configs/dev.yml:/configs/dev.yml"
-
-    environment:
-      - CONFIG_PATH=/configs/dev.yml
-
   proxy-request:
     build:
       context: ./services/proxy-request
+    networks:
+      proxy-manager-network:
 
     container_name: proxy-request-service
     restart: unless-stopped
 
-    environment:
-      - DATABASE_URI=
+    ports:
+      - "3223:3223"
+      - "3123:3123"
+
+    env_file:
+      - path: ./.env/.env.proxy-request-service
+        required: true
+
+    depends_on:
+      proxy-request-migrate:
+        condition: service_completed_successfully
+
+  proxy-request-migrate:
+    image: migrate/migrate:v4.17.1
+    networks:
+      proxy-manager-network:
+
+    volumes:
+      - ./services/proxy-request/migrations:/migrations
+
+    command:
+      [
+        "-path",
+        "migrations",
+        "-database",
+        "postgres://proxy_manager_user:proxy_manager_password@postgres:5432/proxy_manager_db?sslmode=disable",
+        "up",
+        "1",
+      ]
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
 
   postgres:
     image: postgres:alpine
-    environment:
-      - POSTGRES_DB=proxy_manager_db
-      - POSTGRES_USER=proxy_manager_user
-      - POSTGRES_PASSWORD=proxy_manager_password
+    networks:
+      proxy-manager-network:
+
+    env_file:
+      - path: ./.env/.env.postgres
+        required: true
+
     ports:
       - "5432:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "proxy_manager_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  proxy-manager-network:

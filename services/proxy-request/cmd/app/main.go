@@ -32,10 +32,6 @@ func main() {
 		application.GRPCServer.MustRun()
 	}()
 
-	go func() {
-		application.HTTPServer.MustRun()
-	}()
-
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
@@ -46,5 +42,4 @@ func main() {
 	<-ctx.Done()
 
 	application.GRPCServer.Stop()
-	application.HTTPServer.Stop()
 }

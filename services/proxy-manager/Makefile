@@ -3,7 +3,7 @@ SERVICE_NAME=proxy-manager-service
 
 .PHONY: build run 
 build:
-	go build -o ./bin/app ./cmd/app
+	go build -o ./bin/$(SERVICE_NAME) ./cmd/$(SERVICE_NAME)
 
 run: build
 	./bin/app
