@@ -31,5 +31,9 @@ func NewDiscardLogger(level slog.Level, out io.Writer) *slog.Logger {
 }
 
 func Err(err error) slog.Attr {
+	if err == nil {
+		slog.String("error", "nil")
+	}
+
 	return slog.String("error", err.Error())
 }

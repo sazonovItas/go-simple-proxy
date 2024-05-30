@@ -10,22 +10,28 @@ import (
 )
 
 func GRPCError(err error) error {
-	unwrapErr := errors.Unwrap(err)
-
 	switch {
-	case errors.Is(unwrapErr, authsvc.ErrUserNotFound):
+	case errors.Is(err, authsvc.ErrUserNotFound):
 		return status.Errorf(codes.NotFound, "user not found")
 
-	case errors.Is(unwrapErr, authsvc.ErrInvalidCredentials):
+	case errors.Is(err, authsvc.ErrInvalidCredentials):
 		return status.Errorf(codes.PermissionDenied, "invalid password")
 
-	case errors.Is(unwrapErr, authsvc.ErrUserAlreadyExists):
-		return status.Errorf(codes.AlreadyExists, "user already exists")
+	case errors.Is(err, authsvc.ErrUserWithEmailAlreadyExists):
+		return status.Errorf(codes.AlreadyExists, "user with this email already exists")
 
-	case errors.Is(unwrapErr, authsvc.ErrUserNotVerified):
+	case errors.Is(err, authsvc.ErrUserWithLoginAlreadyExists):
+		return status.Errorf(codes.AlreadyExists, "user with this login already exists")
+
+	case errors.Is(err, authsvc.ErrUserEmailNotVerified):
 		return status.Errorf(codes.PermissionDenied, "user has not verified email")
 
-	default:
-		return status.Errorf(codes.Internal, err.Error())
+	case errors.Is(err, authsvc.ErrTokenExpired):
+		return status.Errorf(codes.PermissionDenied, "token expired")
+
+	case errors.Is(err, authsvc.ErrTokenExpired):
+		return status.Errorf(codes.PermissionDenied, "")
 	}
+
+	return status.Errorf(codes.Internal, err.Error())
 }

@@ -17,7 +17,7 @@ func (us *userRepository) UserById(ctx context.Context, id uuid.UUID) (*entity.U
 
 	const query = "SELECT * FROM %s WHERE id=$1"
 
-	stmt, err := us.db.Preparex(us.table(query))
+	stmt, err := us.db.PreparexContext(ctx, us.table(query))
 	if err != nil {
 		return nil, fmt.Errorf("%s: failed prepare statement %w", op, err)
 	}
@@ -41,7 +41,7 @@ func (us *userRepository) UserByEmail(ctx context.Context, email string) (*entit
 
 	const query = "SELECT * FROM %s WHERE email=$1"
 
-	stmt, err := us.db.Preparex(us.table(query))
+	stmt, err := us.db.PreparexContext(ctx, us.table(query))
 	if err != nil {
 		return nil, fmt.Errorf("%s: failed prepare statement %w", op, err)
 	}
@@ -68,7 +68,7 @@ func (us *userRepository) UserByLogin(
 
 	const query = "SELECT * FROM %s WHERE login=$1"
 
-	stmt, err := us.db.Preparex(us.table(query))
+	stmt, err := us.db.PreparexContext(ctx, us.table(query))
 	if err != nil {
 		return nil, fmt.Errorf("%s: failed prepare statement %w", op, err)
 	}
@@ -76,33 +76,6 @@ func (us *userRepository) UserByLogin(
 
 	var user entity.User
 	err = stmt.GetContext(ctx, &user, login)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, adapter.ErrUserNotFound
-		}
-
-		return nil, fmt.Errorf("%s: failed get user %w", op, err)
-	}
-
-	return &user, nil
-}
-
-func (us *userRepository) UserExists(
-	ctx context.Context,
-	email, login string,
-) (*entity.User, error) {
-	const op = "adapter.pgrepo.user.UserExists"
-
-	const query = "SELECT * FROM %s WHERE email=$1 OR login=$2"
-
-	stmt, err := us.db.Preparex(us.table(query))
-	if err != nil {
-		return nil, fmt.Errorf("%s: failed prepare statement %w", op, err)
-	}
-	defer stmt.Close()
-
-	var user entity.User
-	err = stmt.GetContext(ctx, &user, email, login)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, adapter.ErrUserNotFound

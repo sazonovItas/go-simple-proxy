@@ -67,12 +67,12 @@ func getProxyBasicAuth(r *http.Request) (string, string, bool) {
 		return "", "", false
 	}
 
-	base64BasicAuth := strings.Split(proxyBasicAuth, " ")
-	if len(base64BasicAuth) != 2 || base64BasicAuth[0] != "Basic" {
+	splitProxyAuth := strings.Split(proxyBasicAuth, " ")
+	if len(splitProxyAuth) != 2 || splitProxyAuth[0] != "Basic" {
 		return "", "", false
 	}
 
-	basicAuth, err := base64.RawStdEncoding.DecodeString(base64BasicAuth[1])
+	basicAuth, err := base64.StdEncoding.DecodeString(splitProxyAuth[1])
 	if err != nil {
 		return "", "", false
 	}

@@ -8,11 +8,13 @@ service Auth {
 
   rpc Login(LoginRequest) returns (LoginResponse) {}
 
+  rpc Validate(ValidateRequest) returns (Empty) {}
+
   rpc VerifyEmail(VerifyEmailRequest) returns (Empty) {}
 
   rpc ResetPassword(ResetPasswordRequest) returns (Empty) {}
 
-  rpc UpdatePassword(UpdatePasswordRequest) returns (Empty) {}
+  rpc UpdateResetPassword(UpdateResetPasswordRequest) returns (Empty) {}
 }
 
 message RegisterRequest {
@@ -30,11 +32,13 @@ message LoginRequest {
 
 message LoginResponse { string token = 1; }
 
+message ValidateRequest { string token = 1; }
+
 message VerifyEmailRequest { string token = 1; }
 
 message ResetPasswordRequest { string email = 1; }
 
-message UpdatePasswordRequest {
+message UpdateResetPasswordRequest {
   string token = 1;
   string password = 2;
 }

@@ -5,7 +5,7 @@ import "time"
 // TODO: Delete default auth token secret
 type Config struct {
 	Env             string           `yaml:"env"               env:"ENV"               env-default:"local"`
-	TokenTTL        time.Duration    `yaml:"token_ttl"         env:"TOKEN_TTL"         env-default:"30m"`
+	TokenTTL        time.Duration    `yaml:"token_ttl"         env:"AUTH_TOKEN_TTL"    env-default:"30m"`
 	AuthTokenSecret string           `yaml:"auth_token_secret" env:"AUTH_TOKEN_SECRET" env-default:"AUTH_SERCRET"`
 	GRPCServer      GRPCServerConfig `yaml:"grpc_server"`
 	Storage         StorageConfig    `yaml:"storage"`

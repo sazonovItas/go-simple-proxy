@@ -8,13 +8,15 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	memcache "github.com/sazonovItas/proxy-manager/pkg/cache/memory"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	grpcauth "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/auth"
 	grpcrequest "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/request"
-	grpcuser "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/user"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
+	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/handler/middleware"
 	proxysvc "github.com/sazonovItas/proxy-manager/services/proxy/internal/service/proxy"
@@ -26,7 +28,7 @@ type App struct {
 	cfg         *config.Config
 	proxyServer *http.Server
 
-	cliUser    *grpc.ClientConn
+	cliAuth    *grpc.ClientConn
 	cliRequest *grpc.ClientConn
 }
 
@@ -42,7 +44,7 @@ func New(
 		panic(err)
 	}
 
-	cliUser, err := grpc.NewClient(
+	cliAuth, err := grpc.NewClient(
 		cfg.Services.UserServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
@@ -51,7 +53,8 @@ func New(
 	}
 
 	requestRepo := grpcrequest.New(cliRequest)
-	userRepo := grpcuser.New(nil)
+	authRepo := grpcauth.New(cliAuth)
+	tokenRepo := memcache.New[entity.Token](context.Background(), 0, 0)
 
 	if cfg.Proxy.ID == "" {
 		cfg.Proxy.ID = uuid.NewString()
@@ -60,10 +63,9 @@ func New(
 	handler := http.Handler(
 		proxyhandler.New(
 			cfg.Proxy.ID,
-			cfg.Proxy.Name,
 			cfg.Proxy.DialTimeout,
 			l,
-			proxysvc.New(requestRepo, userRepo),
+			proxysvc.New(l, authRepo, requestRepo, tokenRepo),
 		),
 	)
 
@@ -84,7 +86,7 @@ func New(
 		cfg:         cfg,
 		proxyServer: proxyServer,
 
-		cliUser:    cliUser,
+		cliAuth:    cliAuth,
 		cliRequest: cliRequest,
 	}
 }
@@ -120,5 +122,5 @@ func (a *App) Stop() {
 	}
 
 	a.cliRequest.Close()
-	a.cliUser.Close()
+	a.cliAuth.Close()
 }

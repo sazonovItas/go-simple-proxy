@@ -22,20 +22,19 @@ const (
 
 type ProxyService interface {
 	Save(ctx context.Context, r *entity.Request) error
-	Login(ctx context.Context, username, passwordHash string) (*entity.User, error)
+	Login(ctx context.Context, login, password string) (entity.Token, error)
 }
 
 type ProxyHandler struct {
 	id      string
-	name    string
 	timeout time.Duration
 
-	l        *slog.Logger
+	log      *slog.Logger
 	proxySvc ProxyService
 }
 
 func New(
-	id, name string,
+	id string,
 	timeout time.Duration,
 
 	logger *slog.Logger,
@@ -43,44 +42,44 @@ func New(
 ) *ProxyHandler {
 	return &ProxyHandler{
 		id:      id,
-		name:    name,
 		timeout: timeout,
 
-		l:        logger,
+		log:      logger,
 		proxySvc: proxySvc,
 	}
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	creds, _ := middleware.ProxyUserCreditanalsFromContext(r.Context())
-	user, err := ph.proxySvc.Login(r.Context(), creds.Username, creds.Password)
+
+	token, err := ph.proxySvc.Login(r.Context(), creds.Username, creds.Password)
 	if err != nil {
 		middleware.ProxyBasicAuthFailed(w, "")
 		return
 	}
 
 	if r.Method == http.MethodConnect {
-		ph.handleHTTPS(w, r, user)
+		ph.handleHTTPS(w, r, token)
 		return
 	}
 
 	if len(strings.Split(r.URL.Host, ":")) == 1 {
 		r.URL.Host += ":80"
 	}
-	ph.handleHTTP(w, r, user)
+	ph.handleHTTP(w, r, token)
 }
 
 func (ph *ProxyHandler) handleHTTPS(
 	w http.ResponseWriter,
 	r *http.Request,
-	userCreds *entity.User,
+	token entity.Token,
 ) {
 	rc := http.NewResponseController(w)
 	_ = rc.EnableFullDuplex()
 
 	clientConn, _, err := rc.Hijack()
 	if err != nil {
-		ph.l.Error("hijack failed", "error", err.Error())
+		ph.log.Error("hijack failed", "error", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -88,7 +87,7 @@ func (ph *ProxyHandler) handleHTTPS(
 
 	targetConn, err := net.DialTimeout("tcp", r.URL.Host, ph.timeout)
 	if err != nil {
-		ph.l.Error("connection failed", "address", r.URL.Host, "error", err.Error())
+		ph.log.Error("connection failed", "address", r.URL.Host, "error", err.Error())
 		ph.writeRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
@@ -99,7 +98,7 @@ func (ph *ProxyHandler) handleHTTPS(
 	createdAt := time.Now()
 	upload, download := ph.transfering(clientConn, targetConn)
 	request := entity.Request{
-		UserID:    userCreds.ID,
+		UserID:    token.UserID,
 		ProxyID:   ph.id,
 		RemoteIP:  r.RemoteAddr,
 		Host:      strings.Split(r.URL.Host, ":")[0],
@@ -111,13 +110,13 @@ func (ph *ProxyHandler) handleHTTPS(
 	ph.SaveRequest(context.Background(), &request)
 }
 
-func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userCreds *entity.User) {
+func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, token entity.Token) {
 	rc := http.NewResponseController(w)
 	_ = rc.EnableFullDuplex()
 
 	clientConn, _, err := rc.Hijack()
 	if err != nil {
-		ph.l.Error("hijack failed", "error", err.Error())
+		ph.log.Error("hijack failed", "error", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -125,7 +124,7 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userC
 
 	targetConn, err := net.DialTimeout("tcp", r.URL.Host, ph.timeout)
 	if err != nil {
-		ph.l.Error("connection failed", "address", r.URL.Host, "error", err.Error())
+		ph.log.Error("connection failed", "address", r.URL.Host, "error", err.Error())
 		ph.writeRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
@@ -133,14 +132,14 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userC
 
 	clientDumpReq, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		ph.l.Error("failed get dump request", "error", err.Error())
+		ph.log.Error("failed get dump request", "error", err.Error())
 		ph.writeRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
 
 	_, err = targetConn.Write(clientDumpReq)
 	if err != nil {
-		ph.l.Error("failed write client request", "error", err.Error())
+		ph.log.Error("failed write client request", "error", err.Error())
 		ph.writeRawResponse(clientConn, http.StatusInternalServerError, r)
 		return
 	}
@@ -148,7 +147,7 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userC
 	createdAt := time.Now()
 	upload, download := ph.transfering(clientConn, targetConn)
 	request := entity.Request{
-		UserID:    userCreds.ID,
+		UserID:    token.UserID,
 		ProxyID:   ph.id,
 		RemoteIP:  r.RemoteAddr,
 		Host:      strings.Split(r.URL.Host, ":")[0],
@@ -162,7 +161,7 @@ func (ph *ProxyHandler) handleHTTP(w http.ResponseWriter, r *http.Request, userC
 
 func (ph *ProxyHandler) SaveRequest(ctx context.Context, r *entity.Request) {
 	if err := ph.proxySvc.Save(ctx, r); err != nil {
-		ph.l.Error("failed to save request", slogger.Err(err))
+		ph.log.Error("failed to save request", slogger.Err(err))
 		return
 	}
 }

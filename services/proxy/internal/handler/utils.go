@@ -27,7 +27,7 @@ func (ph *ProxyHandler) transfering(clientConn, targetConn net.Conn) (upload, do
 
 func (ph *ProxyHandler) writeRawResponse(conn net.Conn, statusCode int, r *http.Request) {
 	if err := WriteRawResponse(conn, statusCode, r); err != nil {
-		ph.l.Error("writing response", "error", err.Error())
+		ph.log.Error("writing response", "error", err.Error())
 	}
 }
 

@@ -24,6 +24,10 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*Empty, error)
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*Empty, error)
+	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
+	UpdateResetPassword(ctx context.Context, in *UpdateResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type authClient struct {
@@ -52,12 +56,52 @@ func (c *authClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 	return out, nil
 }
 
+func (c *authClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/auth.Auth/Validate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/auth.Auth/VerifyEmail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/auth.Auth/ResetPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) UpdateResetPassword(ctx context.Context, in *UpdateResetPasswordRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/auth.Auth/UpdateResetPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
 type AuthServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	Validate(context.Context, *ValidateRequest) (*Empty, error)
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*Empty, error)
+	ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error)
+	UpdateResetPassword(context.Context, *UpdateResetPasswordRequest) (*Empty, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -70,6 +114,18 @@ func (UnimplementedAuthServer) Register(context.Context, *RegisterRequest) (*Reg
 }
 func (UnimplementedAuthServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthServer) Validate(context.Context, *ValidateRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
+}
+func (UnimplementedAuthServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
+}
+func (UnimplementedAuthServer) ResetPassword(context.Context, *ResetPasswordRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedAuthServer) UpdateResetPassword(context.Context, *UpdateResetPasswordRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateResetPassword not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -120,6 +176,78 @@ func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_Validate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).Validate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/Validate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).Validate(ctx, req.(*ValidateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/VerifyEmail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/ResetPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_UpdateResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateResetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).UpdateResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/UpdateResetPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).UpdateResetPassword(ctx, req.(*UpdateResetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +262,22 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Auth_Login_Handler,
+		},
+		{
+			MethodName: "Validate",
+			Handler:    _Auth_Validate_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _Auth_VerifyEmail_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _Auth_ResetPassword_Handler,
+		},
+		{
+			MethodName: "UpdateResetPassword",
+			Handler:    _Auth_UpdateResetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

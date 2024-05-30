@@ -8,7 +8,7 @@ import (
 	requestv1 "github.com/sazonovItas/proxy-manager/services/proxy-request/pkg/pb/request/v1"
 )
 
-type grpcRequestRepository interface {
+type grpcRequestAPI interface {
 	Save(
 		ctx context.Context,
 		in *requestv1.SaveRequest,
@@ -17,7 +17,7 @@ type grpcRequestRepository interface {
 }
 
 type RequestRepository struct {
-	grpcRequestRepo grpcRequestRepository
+	grpcRequestRepo grpcRequestAPI
 }
 
 func New(cli *grpc.ClientConn) *RequestRepository {

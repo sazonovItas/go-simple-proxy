@@ -13,10 +13,13 @@ services:
       proxy-manager-network:
 
     ports:
-      - "3224:3224"
+      - "3224:${AUTH_SERVICE_PORT}"
 
     environment:
-      DATABASE_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+      AUTH_TOKEN_TTL: ${JWT_AUTH_TOKEN_TTL}
+      AUTH_TOKEN_SECRET: ${JWT_AUTH_TOKEN_SECRET}
+      GRPS_SERVER_ADDRESS: ":${AUTH_SERVICE_PORT}"
+      DATABASE_URI: ${POSTGRES_URI}
 
     depends_on:
       migrator:
@@ -37,7 +40,7 @@ services:
       - "3223:3223"
 
     environment:
-      DATABASE_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+      DATABASE_URI: ${POSTGRES_URI}
 
     depends_on:
       migrator:
@@ -58,7 +61,7 @@ services:
     volumes:
       - ./migrations:/migrations
 
-    command: migrate -path /migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable up
+    command: migrate -path /migrations -database ${POSTGRES_URI} up
 
     depends_on:
       db:
