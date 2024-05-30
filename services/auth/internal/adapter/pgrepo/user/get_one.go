@@ -15,7 +15,7 @@ import (
 func (us *userRepository) UserById(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	const op = "adapter.pgrepo.user.UserById"
 
-	const query = "SELECT * FROM %s WHERE id=$1 LIMIT 1"
+	const query = "SELECT * FROM %s WHERE id=$1"
 
 	stmt, err := us.db.Preparex(us.table(query))
 	if err != nil {
@@ -39,7 +39,7 @@ func (us *userRepository) UserById(ctx context.Context, id uuid.UUID) (*entity.U
 func (us *userRepository) UserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	const op = "adapter.pgrepo.user.UserByEmail"
 
-	const query = "SELECT * FROM %s WHERE email=$1 LIMIT 1"
+	const query = "SELECT * FROM %s WHERE email=$1"
 
 	stmt, err := us.db.Preparex(us.table(query))
 	if err != nil {
@@ -66,7 +66,7 @@ func (us *userRepository) UserByLogin(
 ) (*entity.User, error) {
 	const op = "adapter.pgrepo.user.UserByLogin"
 
-	const query = "SELECT * FROM %s WHERE login=$1 LIMIT 1"
+	const query = "SELECT * FROM %s WHERE login=$1"
 
 	stmt, err := us.db.Preparex(us.table(query))
 	if err != nil {
@@ -93,7 +93,7 @@ func (us *userRepository) UserExists(
 ) (*entity.User, error) {
 	const op = "adapter.pgrepo.user.UserExists"
 
-	const query = "SELECT * FROM %s WHERE email=$1 OR login=$2 LIMIT 1"
+	const query = "SELECT * FROM %s WHERE email=$1 OR login=$2"
 
 	stmt, err := us.db.Preparex(us.table(query))
 	if err != nil {

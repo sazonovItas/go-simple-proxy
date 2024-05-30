@@ -26,6 +26,6 @@ func GRPCError(err error) error {
 		return status.Errorf(codes.PermissionDenied, "user has not verified email")
 
 	default:
-		return status.Errorf(codes.Internal, "internal error")
+		return status.Errorf(codes.Internal, err.Error())
 	}
 }

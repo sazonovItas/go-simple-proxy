@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,17 +13,17 @@ const (
 )
 
 type User struct {
-	ID           uuid.UUID `db:"id"`
-	Email        string    `db:"email"`
-	Login        string    `db:"login"`
-	PasswordHash string    `db:"password_hash"`
-	UserRole     string    `db:"user_role"`
-	ResetToken   string    `db:"reset_token"`
-	VerifyToken  string    `db:"verify_token"`
-	Verified     bool      `db:"verified"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
-	DeletedAt    time.Time `db:"deleted_at"`
+	ID           uuid.UUID      `db:"id"`
+	Email        string         `db:"email"`
+	Login        string         `db:"login"`
+	PasswordHash string         `db:"password_hash"`
+	UserRole     string         `db:"user_role"`
+	ResetToken   sql.NullString `db:"reset_token"`
+	VerifyToken  sql.NullString `db:"verify_token"`
+	Verified     bool           `db:"verified"`
+	CreatedAt    time.Time      `db:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at"`
+	DeletedAt    time.Time      `db:"deleted_at"`
 }
 
 func (u User) IsDeleted() bool {

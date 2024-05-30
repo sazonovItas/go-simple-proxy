@@ -18,6 +18,6 @@ type ProxyConfig struct {
 }
 
 type ServicesConfig struct {
-	RequestServiceAddr string `yaml:"request_service_address" env:"REQUEST_SERVICE_ADDR"`
-	UserServiceAddr    string `yaml:"user_service_addr"       env:"USER_SERVICE_ADDR"`
+	RequestServiceAddr string `yaml:"request_service_address" env:"REQUEST_SERVICE_ADDR" env-default:":3223"`
+	UserServiceAddr    string `yaml:"user_service_addr"       env:"USER_SERVICE_ADDR"    env-default:":3224"`
 }

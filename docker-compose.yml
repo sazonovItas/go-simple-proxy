@@ -1,61 +1,87 @@
-version: "3.9"
+version: "3.8"
 
 services:
-  proxy-request:
+  # service for authenticate users
+  auth-service:
     build:
-      context: ./services/proxy-request
+      context: ./services/auth
+
+    container_name: proxy-auth-service
+    restart: unless-stopped
+
     networks:
       proxy-manager-network:
+
+    ports:
+      - "3224:3224"
+
+    environment:
+      DATABASE_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
+
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+
+  # service for save request
+  request-service:
+    build:
+      context: ./services/proxy-request
 
     container_name: proxy-request-service
     restart: unless-stopped
 
+    networks:
+      proxy-manager-network:
+
     ports:
       - "3223:3223"
-      - "3123:3123"
 
-    env_file:
-      - path: ./.env/.env.proxy-request-service
-        required: true
+    environment:
+      DATABASE_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
 
     depends_on:
-      proxy-request-migrate:
+      migrator:
         condition: service_completed_successfully
 
-  proxy-request-migrate:
-    image: migrate/migrate:v4.17.1
+  # service for migrating
+  migrator:
+    tty: true
+    stdin_open: true
+
+    build:
+      dockerfile: ./deploy/docker/migrator.Dockerfile
+    container_name: go-migrator
+
     networks:
       proxy-manager-network:
 
     volumes:
-      - ./services/proxy-request/migrations:/migrations
+      - ./migrations:/migrations
 
-    command:
-      [
-        "-path",
-        "migrations",
-        "-database",
-        "postgres://proxy_manager_user:proxy_manager_password@postgres:5432/proxy_manager_db?sslmode=disable",
-        "up",
-        "1",
-      ]
+    command: migrate -path /migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable up
 
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
         restart: true
 
-  postgres:
+  # postgres db
+  db:
     image: postgres:alpine
+    container_name: proxy-mananger-db
+    restart: unless-stopped
+
     networks:
       proxy-manager-network:
 
-    env_file:
-      - path: ./.env/.env.postgres
-        required: true
-
     ports:
       - "5432:5432"
+
+    environment:
+      PGPORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "proxy_manager_db"]

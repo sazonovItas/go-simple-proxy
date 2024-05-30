@@ -43,10 +43,14 @@ func New(
 	userRepo userRepo,
 	hasher Hasher,
 	l *slog.Logger,
-	auth_secret string,
+	authSecret string,
 	tokenTTL time.Duration,
 ) *authService {
 	return &authService{
+		log:        l,
+		authSecret: authSecret,
+		tokenTTL:   tokenTTL,
+
 		userRepo: userRepo,
 		hasher:   hasher,
 	}

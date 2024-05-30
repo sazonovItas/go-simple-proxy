@@ -2,6 +2,7 @@ package authsvc
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/lib/hashgenerator"
 )
 
+// TODO: Return user already exists in repository create user
+// do it in one transaction
 func (as *authService) Register(
 	ctx context.Context,
 	email, login, password string,
@@ -21,10 +24,11 @@ func (as *authService) Register(
 
 	as.log.Info("attempting register user")
 
-	_, err := as.userRepo.UserExists(ctx, email, login)
+	ex_user, err := as.userRepo.UserExists(ctx, email, login)
 	if !errors.Is(err, adapter.ErrUserNotFound) {
 		switch {
 		case err == nil:
+			as.log.Warn("user", "user", ex_user)
 			as.log.Warn("user already exists", "email", email, "login", login)
 
 			return uuid.UUID{}, fmt.Errorf("%s: %w", op, ErrUserAlreadyExists)
@@ -55,7 +59,7 @@ func (as *authService) Register(
 		Login:        login,
 		PasswordHash: string(passwordHash),
 		UserRole:     entity.SimpleUser,
-		VerifyToken:  verifyToken,
+		VerifyToken:  sql.NullString{String: verifyToken, Valid: true},
 	}
 
 	id, err := as.userRepo.Create(ctx, &user)
@@ -65,5 +69,5 @@ func (as *authService) Register(
 		return uuid.UUID{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return id, ErrUserAlreadyExists
+	return id, nil
 }
