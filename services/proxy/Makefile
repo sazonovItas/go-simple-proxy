@@ -30,4 +30,4 @@ test:
 
 .PHONY: clean
 clean:
-	rm ./bin/app
+	rm ./bin/$(SERVICE_NAME)
