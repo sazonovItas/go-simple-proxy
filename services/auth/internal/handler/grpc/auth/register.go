@@ -27,7 +27,7 @@ func (ah *authHandler) Register(
 
 	id, err := ah.auth.Register(ctx, r.Email, r.Login, r.Password)
 	if err != nil {
-		return nil, GRPCError(err)
+		return nil, GRPCError(err, "failed to register")
 	}
 
 	return &authv1.RegisterResponse{Id: id.String()}, nil

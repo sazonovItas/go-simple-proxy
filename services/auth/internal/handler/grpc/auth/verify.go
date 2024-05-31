@@ -9,16 +9,17 @@ import (
 	authv1 "github.com/sazonovItas/proxy-manager/services/auth/pkg/pb/auth/v1"
 )
 
-func (ah *authHandler) Validate(
+func (ah *authHandler) VerifyEmail(
 	ctx context.Context,
-	r *authv1.ValidateRequest,
+	r *authv1.VerifyEmailRequest,
 ) (*authv1.Empty, error) {
 	if r.Token == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "token is required")
+		return nil, status.Errorf(codes.InvalidArgument, "verify token is required")
 	}
 
-	if err := ah.auth.Validate(ctx, r.Token); err != nil {
-		return nil, GRPCError(err, "failed to validate token")
+	err := ah.auth.VerifyEmail(ctx, r.Token)
+	if err != nil {
+		return nil, GRPCError(err, "failed verify email")
 	}
 
 	return &authv1.Empty{}, nil

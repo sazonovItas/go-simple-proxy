@@ -23,7 +23,7 @@ func (ah *authHandler) Login(
 
 	token, err := ah.auth.Login(ctx, r.Login, r.Password)
 	if err != nil {
-		return nil, GRPCError(err)
+		return nil, GRPCError(err, "failed to login")
 	}
 
 	return &authv1.LoginResponse{Token: token}, nil

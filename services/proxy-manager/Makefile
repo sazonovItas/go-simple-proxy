@@ -32,4 +32,4 @@ test:
 
 .PHONY: clean
 clean:
-	rm ./bin
+	rm ./bin/*

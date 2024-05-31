@@ -14,6 +14,10 @@ type userRepo interface {
 	Create(ctx context.Context, user *entity.User) (uuid.UUID, error)
 	UserByEmail(ctx context.Context, email string) (*entity.User, error)
 	UserByLogin(ctx context.Context, login string) (*entity.User, error)
+
+	NewResetToken(ctx context.Context, email, resetToken string) error
+	UpdatePasswordByResetToken(ctx context.Context, passwodHash, resetToken string) error
+	VerifyEmail(ctx context.Context, verifyToken string) error
 }
 
 type Hasher interface {

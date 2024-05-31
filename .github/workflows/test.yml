@@ -6,7 +6,17 @@ jobs:
     name: Go test
     runs-on: ubuntu-latest
     strategy:
-      matrix: { dir: ["./pkg", "./services/proxy", "./services/proxy-manager"] }
+      matrix:
+        {
+          dir:
+            [
+              "./pkg",
+              "./services/proxy",
+              "./services/proxy-manager",
+              "./services/proxy-request",
+              "./services/auth",
+            ],
+        }
 
     steps:
       - uses: actions/checkout@v4
@@ -14,10 +24,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-          cache-dependency-path: ./go.sum
+
       - name: Install dependencies
         working-directory: ${{ matrix.dir }}
         run: go get -v -t -d ./...
+
       - name: Test with cli tools
         working-directory: ${{ matrix.dir }}
         run: |

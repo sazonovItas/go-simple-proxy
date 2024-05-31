@@ -15,6 +15,9 @@ var (
 
 	ErrTokenExpired   = errors.New("token expired")
 	ErrTokenMalformed = errors.New("token malformed")
+
+	ErrResetTokenNotFound  = errors.New("reset token not found")
+	ErrVerifyTokenNotFound = errors.New("verify token not found")
 )
 
 func AuthErrors(err error) error {

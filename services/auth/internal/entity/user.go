@@ -37,3 +37,19 @@ func (u User) IsAdmin() bool {
 func (u User) IsVerified() bool {
 	return u.Verified
 }
+
+func (u User) VerifyTokenString() string {
+	if u.VerifyToken.Valid {
+		return u.VerifyToken.String
+	}
+
+	return ""
+}
+
+func (u User) ResetTokenString() string {
+	if u.ResetToken.Valid {
+		return u.ResetToken.String
+	}
+
+	return ""
+}

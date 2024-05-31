@@ -19,16 +19,4 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          args: --config ./.golangci.yml ./pkg/...
-
-      - name: Check golangci-lint for services/proxy
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --config ./.golangci.yml ./services/proxy/...
-
-      - name: Check golangci-lint for services/proxy-manager
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --config ./.golangci.yml ./services/proxy-manager/...
+          args: --config ./.golangci.yml $(find . -type f -name go.mod | sed -r 's|/[^/]+$||' | sed -e 's/$/\/.../')

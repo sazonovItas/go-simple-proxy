@@ -13,7 +13,7 @@ import (
 func (as *authService) Validate(ctx context.Context, token string) error {
 	const op = "service.auth.Validate"
 
-	as.log.Info("token validation")
+	as.log.Info("attemting validate token")
 
 	if err := jwt.ValidateToken(token, as.authSecret); err != nil {
 

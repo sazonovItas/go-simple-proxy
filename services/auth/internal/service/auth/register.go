@@ -46,7 +46,7 @@ func (as *authService) Register(
 	if err != nil {
 		as.log.Error("failed to create user", slogger.Err(err))
 
-		return uuid.UUID{}, fmt.Errorf("%s: %w", op, err)
+		return uuid.UUID{}, fmt.Errorf("%s: %w", op, AuthErrors(err))
 	}
 
 	return id, nil
