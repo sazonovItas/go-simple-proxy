@@ -25,6 +25,6 @@ type StorageConnConfig struct {
 }
 
 type GRPCServerConfig struct {
-	Address string        `yaml:"address" env:"GRPC_SERVER_ADDRESS" env-default:":3224"`
+	Port    int           `yaml:"port"    env:"GRPC_SERVER_PORT"    env-default:"3224"`
 	Timeout time.Duration `yaml:"timeout" env:"GRPC_SERVER_TIMEOUT" env-default:"5s"`
 }

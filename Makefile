@@ -1,3 +1,5 @@
+ENV_FILE=./.env/.env.dev
+
 .PHONY: lint
 lint:
 	./scripts/lint.sh
@@ -8,8 +10,8 @@ clean_none:
 
 .PHONY: docker-up docker-down
 docker-up:
-	docker compose --env-file ./.env/.env.dev up -d
+	docker compose --env-file $(ENV_FILE) up -d
 
 docker-down:
-	docker compose --env-file ./.env/.env.dev down
+	docker compose --env-file $(ENV_FILE) down
 

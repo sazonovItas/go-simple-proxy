@@ -8,14 +8,12 @@ import (
 
 	pgrequest "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/adapter/pgrepo/request"
 	grpcapp "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/app/grpc"
-	httpapp "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/app/http"
 	"github.com/sazonovItas/proxy-manager/services/proxy-request/internal/config"
 	requestusc "github.com/sazonovItas/proxy-manager/services/proxy-request/internal/usecase/request"
 )
 
 type App struct {
 	GRPCServer *grpcapp.App
-	HTTPServer *httpapp.App
 
 	db *postgresdb.DB
 }
@@ -42,11 +40,9 @@ func New(
 	requestUsc := requestusc.New(requestRepo)
 
 	gRPCServer := grpcapp.New(&cfg.GRPCServer, l, requestUsc)
-	httpServer := httpapp.New(&cfg.HTTPServer, l, requestUsc)
 
 	return &App{
 		GRPCServer: gRPCServer,
-		HTTPServer: httpServer,
 
 		db: db,
 	}

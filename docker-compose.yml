@@ -18,7 +18,8 @@ services:
     environment:
       AUTH_TOKEN_TTL: ${JWT_AUTH_TOKEN_TTL}
       AUTH_TOKEN_SECRET: ${JWT_AUTH_TOKEN_SECRET}
-      GRPS_SERVER_ADDRESS: ":${AUTH_SERVICE_PORT}"
+      GRPC_SERVER_PORT: ${AUTH_SERVICE_PORT}
+      GRPC_SERVER_TIMEOUT: ${AUTH_SERVICE_TIMEOUT}
       DATABASE_URI: ${POSTGRES_URI}
 
     depends_on:
@@ -37,9 +38,11 @@ services:
       proxy-manager-network:
 
     ports:
-      - "3223:3223"
+      - "3223:${REQUEST_SERVICE_PORT}"
 
     environment:
+      GRPC_SERVER_PORT: ${REQUEST_SERVICE_PORT}
+      GRPC_SERVER_TIMEOUT: ${REQUEST_SERVICE_TIMEOUT}
       DATABASE_URI: ${POSTGRES_URI}
 
     depends_on:
@@ -78,7 +81,7 @@ services:
       proxy-manager-network:
 
     ports:
-      - "5432:5432"
+      - "5432:${POSTGRES_PORT}"
 
     environment:
       PGPORT: ${POSTGRES_PORT}
@@ -87,10 +90,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "proxy_manager_db"]
+      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 3
 
 networks:
   proxy-manager-network:
+    name: proxy-manager-network-common

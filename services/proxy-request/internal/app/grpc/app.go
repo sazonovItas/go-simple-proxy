@@ -74,7 +74,7 @@ func (a *App) MustRun() {
 func (a *App) Run() error {
 	const op = "grpcapp.Run"
 
-	l, err := net.Listen("tcp", a.cfg.Address)
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.cfg.Port))
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
