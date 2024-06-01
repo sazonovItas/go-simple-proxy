@@ -8,7 +8,7 @@ import (
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/adapter"
-	"github.com/sazonovItas/proxy-manager/services/auth/internal/lib/hashgenerator"
+	"github.com/sazonovItas/proxy-manager/services/auth/internal/lib/hasher"
 )
 
 func (as *authService) ResetToken(ctx context.Context, email string) error {
@@ -16,7 +16,7 @@ func (as *authService) ResetToken(ctx context.Context, email string) error {
 
 	as.log.Info("attemting create new reset token")
 
-	resetToken, err := hashgenerator.NewHash()
+	resetToken, err := hasher.NewRandomHash()
 	if err != nil {
 		as.log.Error("failed generate reset token", slogger.Err(err))
 

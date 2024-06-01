@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
-
-	authsvc "github.com/sazonovItas/proxy-manager/services/auth/internal/service/auth"
 )
 
 const DefaultCost = bcrypt.DefaultCost
@@ -14,8 +12,6 @@ const DefaultCost = bcrypt.DefaultCost
 type hasher struct {
 	cost int
 }
-
-var _ authsvc.Hasher = (*hasher)(nil)
 
 func New(cost int) *hasher {
 	return &hasher{cost: cost}

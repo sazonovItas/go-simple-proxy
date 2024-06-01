@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -15,18 +16,25 @@ var (
 )
 
 // NewToken creates new JWT token for given user and app.
-func NewToken(user *entity.User, secret string, duration time.Duration) (string, error) {
+func NewToken(
+	userInfo entity.UserInfo,
+	secret string,
+	duration time.Duration,
+) (string, error) {
 	const op = "lib.jwt.NewToken"
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
-	claims := token.Claims.(jwt.MapClaims)
-	claims["uid"] = user.ID
-	claims["email"] = user.Email
-	claims["login"] = user.Login
-	claims["role"] = user.UserRole
-	claims["exp"] = time.Now().Add(duration).Unix()
+	exp := time.Now().Add(duration)
+	tokenClaims := &entity.TokenClaims{
+		RegisteredClaims: &jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
+			Subject:   userInfo.ID,
+		},
+		Info: userInfo,
+	}
 
+	token.Claims = tokenClaims
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
@@ -35,15 +43,25 @@ func NewToken(user *entity.User, secret string, duration time.Duration) (string,
 	return tokenString, nil
 }
 
-func ValidateToken(tokenString, secret string) error {
+// ValidateToken validates token and returns token claims
+func ValidateToken(tokenString, secret string) (entity.UserInfo, error) {
 	const op = "lib.jwt.ValidateToken"
 
-	_, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	}, jwt.WithExpirationRequired())
+	token, err := jwt.NewParser(jwt.WithExpirationRequired()).
+		ParseWithClaims(tokenString, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+			return []byte(secret), nil
+		})
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return entity.UserInfo{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return nil
+	if claims, ok := token.Claims.(entity.TokenClaims); ok {
+		return claims.Info, nil
+	}
+
+	return entity.UserInfo{}, fmt.Errorf(
+		"%s: %w",
+		op,
+		errors.New("failed to get claims from token"),
+	)
 }

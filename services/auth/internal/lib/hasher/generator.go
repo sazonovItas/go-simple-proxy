@@ -1,4 +1,4 @@
-package hashgenerator
+package hasher
 
 import (
 	"encoding/base64"
@@ -7,7 +7,7 @@ import (
 )
 
 // Generate some hash or token with timestamp
-func NewHash() (string, error) {
+func NewRandomHash() (string, error) {
 	const op = "lib.hashgenerator.NewHash"
 
 	hash := base64.StdEncoding.EncodeToString([]byte(uuid.NewString()))

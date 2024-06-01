@@ -6,17 +6,14 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 
+	"github.com/sazonovItas/proxy-manager/services/auth/internal/entity"
 	authv1 "github.com/sazonovItas/proxy-manager/services/auth/pkg/pb/auth/v1"
 )
 
 type AuthService interface {
 	Register(ctx context.Context, email, login, password string) (uuid.UUID, error)
 	Login(ctx context.Context, email, password string) (string, error)
-	Validate(ctx context.Context, token string) error
-
-	ResetToken(ctx context.Context, email string) error
-	UpdatePassword(ctx context.Context, password, resetToken string) error
-	VerifyEmail(ctx context.Context, verifyToken string) error
+	Validate(ctx context.Context, token string) (entity.UserInfo, error)
 }
 
 type authHandler struct {

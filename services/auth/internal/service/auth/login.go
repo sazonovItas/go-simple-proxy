@@ -8,10 +8,11 @@ import (
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/adapter"
+	"github.com/sazonovItas/proxy-manager/services/auth/internal/entity"
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/lib/jwt"
 )
 
-// TODO: check user verification
+// TODO: check user email verification
 func (as *authService) Login(
 	ctx context.Context,
 	login, password string,
@@ -40,7 +41,14 @@ func (as *authService) Login(
 		return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 	}
 
-	token, err := jwt.NewToken(user, as.authSecret, as.tokenTTL)
+	userInfo := entity.UserInfo{
+		ID:    user.ID.String(),
+		Email: user.Email,
+		Login: user.Login,
+		Role:  user.UserRole,
+	}
+
+	token, err := jwt.NewToken(userInfo, as.authSecret, as.tokenTTL)
 	if err != nil {
 		as.log.Error("failed to generate jwt token", err)
 

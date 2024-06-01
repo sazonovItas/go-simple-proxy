@@ -12,14 +12,20 @@ import (
 func (ah *authHandler) Validate(
 	ctx context.Context,
 	r *authv1.ValidateRequest,
-) (*authv1.Empty, error) {
+) (*authv1.ValidateResponse, error) {
 	if r.Token == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "token is required")
 	}
 
-	if err := ah.auth.Validate(ctx, r.Token); err != nil {
+	claims, err := ah.auth.Validate(ctx, r.Token)
+	if err != nil {
 		return nil, GRPCError(err, "failed to validate token")
 	}
 
-	return &authv1.Empty{}, nil
+	return &authv1.ValidateResponse{
+		Id:    claims.ID,
+		Email: claims.Email,
+		Login: claims.Login,
+		Role:  claims.Role,
+	}, nil
 }

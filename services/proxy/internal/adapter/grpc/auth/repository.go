@@ -18,7 +18,7 @@ type grpcAuthAPI interface {
 		ctx context.Context,
 		in *authv1.ValidateRequest,
 		opts ...grpc.CallOption,
-	) (*authv1.Empty, error)
+	) (*authv1.ValidateResponse, error)
 }
 
 type authRepository struct {
