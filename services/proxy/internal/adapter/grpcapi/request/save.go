@@ -1,4 +1,4 @@
-package grpcrequest
+package grpcapirequest
 
 import (
 	"context"

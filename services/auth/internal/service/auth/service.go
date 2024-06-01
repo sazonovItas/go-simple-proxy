@@ -12,7 +12,6 @@ import (
 
 type userRepo interface {
 	NewUser(ctx context.Context, user *entity.User) (uuid.UUID, error)
-	UserByEmail(ctx context.Context, email string) (*entity.User, error)
 	UserByLogin(ctx context.Context, login string) (*entity.User, error)
 	UserByVerifyToken(ctx context.Context, verifyToken string) (*entity.User, error)
 	UserByResetToken(ctx context.Context, resetToken string) (*entity.User, error)

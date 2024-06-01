@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	grpcauth "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/auth"
-	grpcrequest "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpc/request"
+	grpcapiauth "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpcapi/auth"
+	grpcapirequest "github.com/sazonovItas/proxy-manager/services/proxy/internal/adapter/grpcapi/request"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/config"
 	"github.com/sazonovItas/proxy-manager/services/proxy/internal/entity"
 	proxyhandler "github.com/sazonovItas/proxy-manager/services/proxy/internal/handler"
@@ -52,8 +52,8 @@ func New(
 		panic(err)
 	}
 
-	requestRepo := grpcrequest.New(cliRequest)
-	authRepo := grpcauth.New(cliAuth)
+	requestRepo := grpcapirequest.New(cliRequest)
+	authRepo := grpcapiauth.New(cliAuth)
 	tokenRepo := memcache.New[entity.Token](context.Background(), 0, 0)
 
 	if cfg.Proxy.ID == "" {

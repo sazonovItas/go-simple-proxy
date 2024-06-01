@@ -1,4 +1,4 @@
-package grpcauth
+package grpcapiauth
 
 import (
 	"context"

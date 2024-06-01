@@ -14,7 +14,7 @@ type requestRepository interface {
 
 type authRepository interface {
 	Login(ctx context.Context, login, password string) (string, error)
-	Validate(ctx context.Context, token string) error
+	Validate(ctx context.Context, token string) (string, error)
 }
 
 type tokenRepository[T any] interface {

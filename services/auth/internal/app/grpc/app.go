@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/config"
+	"github.com/sazonovItas/proxy-manager/services/auth/internal/handler/grpc/account"
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/handler/grpc/auth"
 )
 
@@ -24,7 +25,12 @@ type App struct {
 	authSvc    auth.AuthService
 }
 
-func New(cfg *config.GRPCServerConfig, l *slog.Logger, authSvc auth.AuthService) *App {
+func New(
+	cfg *config.GRPCServerConfig,
+	l *slog.Logger,
+	authSvc auth.AuthService,
+	accountSvc account.AccountService,
+) *App {
 	loggingOpts := []logging.Option{
 		logging.WithLogOnEvents(
 			logging.StartCall, logging.FinishCall,
@@ -46,6 +52,7 @@ func New(cfg *config.GRPCServerConfig, l *slog.Logger, authSvc auth.AuthService)
 	))
 
 	auth.Register(gRPCServer, auth.New(authSvc))
+	account.Register(gRPCServer, account.New(accountSvc))
 
 	return &App{
 		log: l,

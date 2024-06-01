@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package account;
+option go_package = "account/v1;accountv1";
+import "google/protobuf/timestamp.proto";
+
+service Account {
+  rpc User(UserRequest) returns (UserResponse) {}
+}
+
+message UserRequest { string id = 1; }
+
+message UserResponse {
+  string email = 1;
+  string login = 2;
+  string role = 3;
+  google.protobuf.Timestamp created_at = 4;
+}

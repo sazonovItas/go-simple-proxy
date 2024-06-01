@@ -10,6 +10,7 @@ import (
 	grpcapp "github.com/sazonovItas/proxy-manager/services/auth/internal/app/grpc"
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/config"
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/lib/hasher"
+	accountsvc "github.com/sazonovItas/proxy-manager/services/auth/internal/service/account"
 	authsvc "github.com/sazonovItas/proxy-manager/services/auth/internal/service/auth"
 )
 
@@ -41,8 +42,9 @@ func New(
 	userRepo := pguser.New(db, cfg.Storage.TableName)
 
 	authSvc := authsvc.New(userRepo, hasher, l, cfg.AuthTokenSecret, cfg.TokenTTL)
+	accountSvc := accountsvc.New(userRepo, l)
 
-	srv := grpcapp.New(&cfg.GRPCServer, l, authSvc)
+	srv := grpcapp.New(&cfg.GRPCServer, l, authSvc, accountSvc)
 
 	return &App{
 		GRPCServer: srv,
