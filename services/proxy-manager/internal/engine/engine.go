@@ -3,24 +3,29 @@ package engine
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/google/uuid"
+	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/proxy-manager/internal/config"
 )
 
 type Engine struct {
-	cli *client.Client
+	log *slog.Logger
 
-	proxyImg string
-
+	cli        *client.Client
+	proxyImg   string
 	containers []*ProxyContainer
 }
 
 func NewEngine(
-	proxyImage string,
+	proxyImg string,
 	clientConfig DockerClientConfig,
+	proxies []config.ProxyConfig,
+
+	l *slog.Logger,
 ) (*Engine, error) {
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(clientConfig.Host),
@@ -31,64 +36,61 @@ func NewEngine(
 		return nil, fmt.Errorf("failed init docker client: %w", err)
 	}
 
+	containers := make([]*ProxyContainer, len(proxies))
+	for i, cfg := range proxies {
+		cfg.ID = uuid.NewString()
+		containers[i] = NewProxyContainer(proxyImg, cfg)
+	}
+
 	return &Engine{
-		cli:      cli,
-		proxyImg: proxyImage,
+		log: l,
+
+		cli:        cli,
+		proxyImg:   proxyImg,
+		containers: containers,
 	}, nil
 }
 
-func (e *Engine) Run(startUpProxies []config.ProxyConfig) (err error) {
-	for _, cfg := range startUpProxies {
-		ctr := NewProxyContainer("", cfg, e.proxyImg)
+func (e *Engine) Run(ctx context.Context) error {
+	const op = "engine.Run"
 
-		resp, err := e.cli.ContainerCreate(
-			context.Background(),
-			ctr.Container.ContainerCfg,
-			ctr.Container.HostCfg,
-			ctr.Container.NetworkCfg,
-			ctr.Container.PlatformCfg,
-			ctr.Container.Name,
-		)
+	l := e.log.With(slog.String("op", op))
+
+	for _, ctr := range e.containers {
+		err := e.CreateContainer(ctx, ctr)
 		if err != nil {
-			return fmt.Errorf("failed create container: %w", err)
+			l.Error("failed to create container", slogger.Err(err))
+
+			return fmt.Errorf("%s: %w", op, err)
 		}
 
-		ctr.ID = resp.ID
-		err = e.cli.ContainerStart(context.Background(), ctr.ID, container.StartOptions{})
+		err = e.StartContainer(ctx, ctr)
 		if err != nil {
-			return fmt.Errorf("failed start container: %w", err)
-		}
+			l.Error("failed to start container", slogger.Err(err))
 
-		stats, err := e.cli.ContainerInspect(context.Background(), ctr.ID)
-		if err != nil {
-			return fmt.Errorf("failed inspect container: %w", err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
-
-		ctr.ContainerState = stats.ContainerJSONBase.State
-		e.containers = append(e.containers, ctr)
 	}
 
 	return nil
 }
 
-func (e *Engine) Shutdown(ctx context.Context) error {
+func (e *Engine) Shutdown(ctx context.Context) {
+	const op = "engine.Shutdown"
+
+	l := e.log.With(slog.String("op", op))
+
+	l.Info("stopping proxy manager engine")
+
 	for _, ctr := range e.containers {
-		err := e.cli.ContainerStop(ctx, ctr.ID, container.StopOptions{Timeout: nil})
+		err := e.StopContainer(ctx, ctr)
 		if err != nil {
-			return fmt.Errorf("failed stop container: %w", err)
+			l.Error("failed to stop container", slogger.Err(err))
 		}
 
-		err = e.cli.ContainerRemove(
-			context.Background(),
-			ctr.ID,
-			container.RemoveOptions{
-				Force: true,
-			},
-		)
+		err = e.RemoveContainer(ctx, ctr)
 		if err != nil {
-			return fmt.Errorf("failed remove container: %w", err)
+			l.Error("failed to remove container", slogger.Err(err))
 		}
 	}
-
-	return nil
 }

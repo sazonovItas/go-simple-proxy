@@ -3,10 +3,9 @@ module github.com/sazonovItas/proxy-manager/services/proxy
 go 1.22.2
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/sazonovItas/proxy-manager/pkg v0.0.0-20240528080904-d009a901582f
-	github.com/sazonovItas/proxy-manager/services/auth v0.0.0-20240531114332-b9148301960f
+	github.com/sazonovItas/proxy-manager/services/auth v0.0.0-20240601164456-f948f25d420f
 	github.com/sazonovItas/proxy-manager/services/proxy-request v0.0.0-20240528075408-e98dc18ac5eb
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.1

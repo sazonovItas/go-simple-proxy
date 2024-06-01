@@ -15,9 +15,8 @@ type DockerClientConfig struct {
 }
 
 type ContainerConfig struct {
-	Name         string
-	ContainerCfg *container.Config
-	HostCfg      *container.HostConfig
-	NetworkCfg   *network.NetworkingConfig
-	PlatformCfg  *v1.Platform
+	Container *container.Config
+	Host      *container.HostConfig
+	Network   *network.NetworkingConfig
+	Platform  *v1.Platform
 }

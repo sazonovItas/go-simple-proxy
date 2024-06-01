@@ -5,6 +5,7 @@ import (
 )
 
 type Config struct {
+	GRPCServer   GRPCServerConfig   `yaml:"grpc_server"`
 	DockerClient DockerClientConfig `yaml:"docker_client"`
 	ProxyManager ProxyManagerConfig `yaml:"proxy_manager"`
 }
@@ -16,37 +17,27 @@ type DockerClientConfig struct {
 }
 
 type ProxyManagerConfig struct {
-	RPCServer  RPCServerConfig  `yaml:"rpc_server"`
-	Engine     EngineConfig     `yaml:"engine"`
-	Proxies    []ProxyConfig    `yaml:"proxies"`
-	ProxyImage ProxyImageConfig `yaml:"proxy_image"`
+	Proxies         []ProxyConfig    `yaml:"proxy"`
+	ProxyImage      ProxyImageConfig `yaml:"proxy_image"`
+	ShutdownTimeout time.Duration    `yaml:"shutdown_timeout"`
 }
 
 type ProxyConfig struct {
-	Env               string        `env:"ENV"                 json:"env"`
-	ID                string        `env:"PROXY_ID"            json:"id"`
-	Port              string        `env:"PORT"                json:"port"`
-	ReadHeaderTimeout time.Duration `env:"READ_HEADER_TIMEOUT" json:"read_header_timeout"`
-	ReadTimeout       time.Duration `env:"READ_TIMEOUT"        json:"read_timeout"`
-	WriteTimeout      time.Duration `env:"WRITE_TIMEOUT"       json:"write_timeout"`
-	ShutdownTimeout   time.Duration `env:"SHUTDOWN_TIMEOUT"    json:"shutdown_timeout"`
-
-	ProxyUserCacheTimeout   time.Duration `env:"PROXY_USER_CACHE_TIMEOUT"      json:"proxy_user_cache_timeout"`
-	ProxyUserServiceAddr    string        `env:"PROXY_USER_SERVICE_ADDRESS"    json:"proxy_user_service_addr"`
-	ProxyRequestServiceAddr string        `env:"PROXY_REQUEST_SERVICE_ADDRESS" json:"proxy_request_service_addr"`
-}
-
-type ProxyContainerConfig struct {
-	Image           string `yaml:"image"            env:"PROXY_IMAGE"`
-	ServicesNetwork string `yaml:"services_network" env:"SERVICE_NETWORK"`
+	Env                string        `env:"ENV"                  json:"env,omitempty"                     yaml:"env"`
+	ID                 string        `env:"PROXY_ID"             json:"id,omitempty"                      yaml:"id"`
+	Port               int           `env:"PORT"                 json:"port,omitempty"                    yaml:"port"`
+	ReadHeaderTimeout  time.Duration `env:"READ_HEADER_TIMEOUT"  json:"read_header_timeout,omitempty"     yaml:"read_header_timeout"`
+	DialTimeout        time.Duration `env:"DIAL_TIMEOUT"         json:"dial_timeout,omitempty"            yaml:"dial_timeout"`
+	ShutdownTimeout    time.Duration `env:"SHUTDOWN_TIMEOUT"     json:"shutdown_timeout,omitempty"        yaml:"shutdown_timeout"`
+	RequestServiceAddr string        `env:"REQUEST_SERVICE_ADDR" json:"request_service_address,omitempty" yaml:"request_service_addr"`
+	UserServiceAddr    string        `env:"USER_SERVICE_ADDR"    json:"user_service_address,omitempty"    yaml:"user_service_addr"`
 }
 
 type ProxyImageConfig struct {
 	Image string `yaml:"image"`
 }
 
-type EngineConfig struct {
-	CheckTimeout time.Duration `yaml:"check_timeout"`
+type GRPCServerConfig struct {
+	Port    string        `yaml:"port"`
+	Timeout time.Duration `yaml:"timeout"`
 }
-
-type RPCServerConfig struct{}

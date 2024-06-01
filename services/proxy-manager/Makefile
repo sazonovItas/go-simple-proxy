@@ -3,10 +3,10 @@ SERVICE_NAME=proxy-manager-service
 
 .PHONY: build run 
 build:
-	go build -o ./bin/$(SERVICE_NAME) ./cmd/$(SERVICE_NAME)
+	go build -o ./bin/$(SERVICE_NAME) ./cmd/app
 
 run: build
-	./bin/app
+	./bin/$(SERVICE_NAME)
 
 .PHONY: docker-image docker-container
 docker-image:

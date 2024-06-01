@@ -18,6 +18,6 @@ FROM alpine:3.19.1 AS development
 
 COPY --from=build /bin/app /bin/
 
-EXPOSE 3030
+EXPOSE 3225
 
 ENTRYPOINT [ "/bin/app" ]

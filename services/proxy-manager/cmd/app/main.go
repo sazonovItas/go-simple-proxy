@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
 	"github.com/sazonovItas/proxy-manager/pkg/logger"
@@ -27,26 +25,25 @@ func main() {
 		log.Fatalf("faild to load proxy manager config: %s", err.Error())
 	}
 
-	logger := logger.NewSlogLogger(
+	l := logger.NewSlogLogger(
 		logger.LogConfig{Environment: "dev", LogLevel: logger.DEBUG},
 		os.Stdout,
 	)
-	logger.Info("init config", "config", *cfg)
+	l.Info("init config", "config", *cfg)
 
 	engine, err := engine.NewEngine(cfg.ProxyManager.ProxyImage.Image, engine.DockerClientConfig{
 		ApiVersion: cfg.DockerClient.ApiVersion,
 		Timeout:    cfg.DockerClient.Timeout,
 		Host:       cfg.DockerClient.Host,
-	})
+	}, cfg.ProxyManager.Proxies, l)
 	if err != nil {
-		logger.Error("failed init engine", slogger.Err(err))
+		l.Error("failed init engine", slogger.Err(err))
 		return
 	}
 
-	err = engine.Run(cfg.ProxyManager.Proxies)
+	err = engine.Run(context.Background())
 	if err != nil {
-		logger.Error("failed run proxy manager", slogger.Err(err))
-		return
+		l.Error("failed to run engine", slogger.Err(err))
 	}
 
 	ctx, stop := signal.NotifyContext(
@@ -58,19 +55,13 @@ func main() {
 
 	<-ctx.Done()
 
-	// TODO: change shutdown timeout with config value
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-	defer func() {
-		cancel()
+	shutdownCtx, cancel := context.WithTimeout(
+		context.Background(),
+		cfg.ProxyManager.ShutdownTimeout,
+	)
+	defer cancel()
 
-		if shutdownCtx.Err() != nil && !errors.Is(shutdownCtx.Err(), context.Canceled) {
-			logger.Warn("proxy manager shutdown with error", slogger.Err(shutdownCtx.Err()))
-		}
-	}()
+	engine.Shutdown(shutdownCtx)
 
-	if err := engine.Shutdown(shutdownCtx); err != nil {
-		logger.Error("engine shuted down with error", "error", err.Error())
-	}
-
-	logger.Info("proxy manager is shuted down")
+	l.Info("proxy manager stopped")
 }

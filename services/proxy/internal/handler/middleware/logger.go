@@ -11,7 +11,7 @@ func Logger(l *slog.Logger) func(next http.Handler) http.Handler {
 	const op = "handler.middleware.Logger"
 
 	return func(next http.Handler) http.Handler {
-		log := l.With("logger middleware", op)
+		log := l.With("op", op)
 
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			t1 := time.Now()
