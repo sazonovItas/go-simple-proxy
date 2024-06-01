@@ -50,7 +50,7 @@ func (as *authService) Login(
 
 	token, err := jwt.NewToken(userInfo, as.authSecret, as.tokenTTL)
 	if err != nil {
-		as.log.Error("failed to generate jwt token", err)
+		as.log.Error("failed to generate jwt token", slogger.Err(err))
 
 		return "", fmt.Errorf("%s: %w", op, err)
 	}

@@ -19,7 +19,7 @@ func (ah *authHandler) Validate(
 
 	claims, err := ah.auth.Validate(ctx, r.Token)
 	if err != nil {
-		return nil, GRPCError(err, "failed to validate token")
+		return nil, GRPCError(err, "failed validate token")
 	}
 
 	return &authv1.ValidateResponse{

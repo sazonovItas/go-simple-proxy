@@ -8,11 +8,12 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/sazonovItas/proxy-manager/services/auth/internal/adapter"
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/entity"
 	authsvc "github.com/sazonovItas/proxy-manager/services/auth/internal/service/auth"
 )
 
-func (us *userRepository) Create(ctx context.Context, user *entity.User) (uuid.UUID, error) {
+func (us *userRepository) NewUser(ctx context.Context, user *entity.User) (uuid.UUID, error) {
 	const op = "adapter.pgrepo.user.Create"
 
 	const query = `INSERT INTO %s (id, email, login, password_hash, user_role, verify_token)
@@ -67,4 +68,37 @@ func (us *userRepository) Create(ctx context.Context, user *entity.User) (uuid.U
 	}
 
 	return user.ID, nil
+}
+
+func (us *userRepository) NewResetToken(ctx context.Context, email, resetToken string) error {
+	const op = "adapter.pgrepo.user.NewResetToken"
+
+	const query = "UPDATE %s SET reset_token=$1 WHERE email=$2"
+
+	stmt, err := us.db.PreparexContext(ctx, us.table(query))
+	if err != nil {
+		return fmt.Errorf("%s: failed to prepare statment: %w", op, err)
+	}
+	defer stmt.Close()
+
+	token := sql.NullString{
+		Valid:  true,
+		String: resetToken,
+	}
+
+	result, err := stmt.ExecContext(ctx, token, email)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if rows == 0 {
+		return fmt.Errorf("%s: %w", op, adapter.ErrUserNotFound)
+	}
+
+	return nil
 }

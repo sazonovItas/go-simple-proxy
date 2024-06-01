@@ -42,7 +42,7 @@ func (as *authService) Register(
 		VerifyToken:  sql.NullString{String: verifyToken, Valid: true},
 	}
 
-	id, err := as.userRepo.Create(ctx, &user)
+	id, err := as.userRepo.NewUser(ctx, &user)
 	if err != nil {
 		as.log.Error("failed to create user", slogger.Err(err))
 

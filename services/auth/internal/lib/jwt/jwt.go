@@ -48,14 +48,14 @@ func ValidateToken(tokenString, secret string) (entity.UserInfo, error) {
 	const op = "lib.jwt.ValidateToken"
 
 	token, err := jwt.NewParser(jwt.WithExpirationRequired()).
-		ParseWithClaims(tokenString, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+		ParseWithClaims(tokenString, &entity.TokenClaims{}, func(t *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil
 		})
 	if err != nil {
 		return entity.UserInfo{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	if claims, ok := token.Claims.(entity.TokenClaims); ok {
+	if claims, ok := token.Claims.(*entity.TokenClaims); ok {
 		return claims.Info, nil
 	}
 

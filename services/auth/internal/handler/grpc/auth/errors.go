@@ -14,6 +14,12 @@ func GRPCError(err error, unknownMsg string) error {
 	case errors.Is(err, authsvc.ErrUserNotFound):
 		return status.Errorf(codes.NotFound, "user not found")
 
+	case errors.Is(err, authsvc.ErrResetTokenNotFound):
+		return status.Errorf(codes.NotFound, "reset token not found")
+
+	case errors.Is(err, authsvc.ErrVerifyTokenNotFound):
+		return status.Errorf(codes.NotFound, "verify token not found")
+
 	case errors.Is(err, authsvc.ErrUserWithEmailAlreadyExists):
 		return status.Errorf(codes.AlreadyExists, "user with this email already exists")
 
@@ -31,6 +37,7 @@ func GRPCError(err error, unknownMsg string) error {
 
 	case errors.Is(err, authsvc.ErrTokenMalformed):
 		return status.Errorf(codes.PermissionDenied, "token is malformed")
+
 	}
 
 	return status.Errorf(codes.Internal, unknownMsg)
