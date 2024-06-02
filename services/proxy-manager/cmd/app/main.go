@@ -3,16 +3,16 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	configutils "github.com/sazonovItas/proxy-manager/pkg/config/utils"
 	"github.com/sazonovItas/proxy-manager/pkg/logger"
-	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
+	"github.com/sazonovItas/proxy-manager/services/proxy-manager/internal/app"
 	"github.com/sazonovItas/proxy-manager/services/proxy-manager/internal/config"
-	"github.com/sazonovItas/proxy-manager/services/proxy-manager/internal/engine"
 )
 
 const (
@@ -28,23 +28,15 @@ func main() {
 	l := logger.NewSlogLogger(
 		logger.LogConfig{Environment: "dev", LogLevel: logger.DEBUG},
 		os.Stdout,
-	)
+	).With(slog.String("app", "proxy-manager-service"))
 	l.Info("init config", "config", *cfg)
 
-	engine, err := engine.NewEngine(cfg.ProxyManager.ProxyImage.Image, engine.DockerClientConfig{
-		ApiVersion: cfg.DockerClient.ApiVersion,
-		Timeout:    cfg.DockerClient.Timeout,
-		Host:       cfg.DockerClient.Host,
-	}, cfg.ProxyManager.Proxies, l)
-	if err != nil {
-		l.Error("failed init engine", slogger.Err(err))
-		return
-	}
+	application := app.New(l, cfg)
+	defer application.Stop()
 
-	err = engine.Run(context.Background())
-	if err != nil {
-		l.Error("failed to run engine", slogger.Err(err))
-	}
+	go func() {
+		application.GRPCServer.MustRun()
+	}()
 
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
@@ -55,13 +47,5 @@ func main() {
 
 	<-ctx.Done()
 
-	shutdownCtx, cancel := context.WithTimeout(
-		context.Background(),
-		cfg.ProxyManager.ShutdownTimeout,
-	)
-	defer cancel()
-
-	engine.Shutdown(shutdownCtx)
-
-	l.Info("proxy manager stopped")
+	application.GRPCServer.Stop()
 }

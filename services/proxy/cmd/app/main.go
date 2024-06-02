@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,7 +23,7 @@ func main() {
 	l := logger.NewSlogLogger(
 		logger.LogConfig{Environment: cfg.Env, LogLevel: logger.DEBUG},
 		os.Stdout,
-	)
+	).With(slog.String("app", "go-proxy"))
 	l.Info("config loaded", "config", cfg)
 
 	application := app.New(l, cfg)

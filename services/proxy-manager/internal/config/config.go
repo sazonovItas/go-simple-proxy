@@ -17,9 +17,11 @@ type DockerClientConfig struct {
 }
 
 type ProxyManagerConfig struct {
+	Host            string           `yaml:"host"`
 	Proxies         []ProxyConfig    `yaml:"proxy"`
 	ProxyImage      ProxyImageConfig `yaml:"proxy_image"`
 	ShutdownTimeout time.Duration    `yaml:"shutdown_timeout"`
+	StartTimeout    time.Duration    `yaml:"start_timeout"`
 }
 
 type ProxyConfig struct {
@@ -38,6 +40,6 @@ type ProxyImageConfig struct {
 }
 
 type GRPCServerConfig struct {
-	Port    string        `yaml:"port"`
-	Timeout time.Duration `yaml:"timeout"`
+	Port    int           `yaml:"port"    env:"GRPC_SERVER_PORT"     env-default:"3225"`
+	Timeout time.Duration `yaml:"timeout" env:"GRPC_SERVIER_TIMEOUT" env-default:"10s"`
 }

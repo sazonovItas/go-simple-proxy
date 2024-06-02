@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package manager;
+option go_package = "manager/v1;managerv1";
+
+service ProxyManager {
+  rpc Info(InfoRequest) returns (InfoResponse) {}
+}
+
+message InfoRequest {}
+
+message InfoResponse { repeated ProxyState info = 1; }
+
+message ProxyState {
+  string id = 1;
+  string status = 2;
+  string address = 3;
+  string startedAt = 4;
+}

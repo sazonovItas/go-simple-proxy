@@ -1,9 +1,10 @@
 proxy_manager:
-  host: "0.0.0.0"
+  host: "proxymanager.com"
   proxy_image:
     image: "go-proxy"
 
   shutdown_timeout: 10s
+  start_timeout: 10s
 
   proxy:
     - env: local
@@ -22,17 +23,13 @@ proxy_manager:
       request_service_addr: ":3223"
       user_service_addr: ":3224"
 
-    - env: prod
+    - env: dev
       port: 8226
       read_header_timeout: 1s
       dial_timeout: 15s
       shutdown_timeout: 20s
       request_service_addr: ":3223"
       user_service_addr: ":3224"
-
-grpc_server:
-  port: 3225
-  timeout: 10s
 
 docker_client:
   host: "unix:///var/run/docker.sock"

@@ -3,6 +3,7 @@ go 1.22.2
 use (
 	./pkg
 	./services/auth
+	./services/gateway
 	./services/proxy
 	./services/proxy-manager
 	./services/proxy-request

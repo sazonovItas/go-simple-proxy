@@ -1,6 +1,67 @@
 version: "3.8"
 
 services:
+  # service gateway for grpc to http
+  gateway-service:
+    build:
+      context: ./services/gateway
+
+    container_name: proxy-gateway-service
+    restart: unless-stopped
+
+    networks:
+      proxy-manager-network:
+
+    ports:
+      - "3326:${GATEWAY_SERVICE_PORT}"
+
+    environment:
+      HTTP_SERVER_PORT: ${GATEWAY_SERVICE_PORT}
+      HTTP_SERVER_TIMEOUT: ${GATEWAY_SERVICE_TIMEOUT}
+      HTTP_SERVER_IDLE_TIMEOUT: ${GATEWAY_SERVICE_IDLE_TIMEOUT}
+      HTTP_SERVER_SHUTDOWN_TIMEOUT: ${GATEWAY_SERVICE_SHUTDOWN_TIMEOUT}
+
+      REQUEST_SERVICE_ADDR: "request-service:${REQUEST_SERVICE_PORT}"
+      AUTH_SERVICE_ADDR: "auth-service:${AUTH_SERVICE_PORT}"
+      MANAGER_SERVICE_ADDR: "manager-service:${MANAGER_SERVICE_PORT}"
+
+    depends_on:
+      manager-service:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      request-service:
+        condition: service_started
+
+  # service for proxy managing
+  manager-service:
+    build:
+      context: ./services/proxy-manager
+
+    container_name: proxy-manager-service
+    restart: unless-stopped
+
+    networks:
+      proxy-manager-network:
+
+    ports:
+      - "3225:${MANAGER_SERVICE_PORT}"
+
+    volumes:
+      - ./services/proxy-manager/configs:/configs
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+    environment:
+      CONFIG_PATH: ${MANAGER_SERVICE_CONFIG_PATH}
+      GRPC_SERVER_PORT: ${MANAGER_SERVICE_PORT}
+      GRPC_SERVER_TIMEOUT: ${MANAGER_SERVICE_TIMEOUT}
+
+    depends_on:
+      auth-service:
+        condition: service_started
+      request-service:
+        condition: service_started
+
   # service for authenticate users
   auth-service:
     build:
@@ -83,6 +144,9 @@ services:
     ports:
       - "5432:${POSTGRES_PORT}"
 
+    volumes:
+      - pgdata:/var/lib/postgresql
+
     environment:
       PGPORT: ${POSTGRES_PORT}
       POSTGRES_DB: ${POSTGRES_DB}
@@ -98,3 +162,8 @@ services:
 networks:
   proxy-manager-network:
     name: proxy-manager-network-common
+
+volumes:
+  pgdata:
+    name: proxy-manager-db-volume
+    external: true

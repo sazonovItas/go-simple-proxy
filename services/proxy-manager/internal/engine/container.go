@@ -50,16 +50,17 @@ func NewProxyContainer(
 
 func (e *Engine) ContainerState(
 	ctx context.Context,
-	id string,
-) (*types.ContainerState, error) {
+	ctr *ProxyContainer,
+) error {
 	const op = "engine.ContainerState"
 
-	stats, err := e.cli.ContainerInspect(ctx, id)
+	stats, err := e.cli.ContainerInspect(ctx, ctr.ID)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
+	ctr.ContainerState = stats.State
 
-	return stats.State, nil
+	return nil
 }
 
 func (e *Engine) CreateContainer(ctx context.Context, ctr *ProxyContainer) error {

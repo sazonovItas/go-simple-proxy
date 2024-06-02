@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/docker/docker/client"
 	"github.com/google/uuid"
@@ -12,12 +13,16 @@ import (
 	"github.com/sazonovItas/proxy-manager/services/proxy-manager/internal/config"
 )
 
+const updateTimeout = time.Second * 5
+
 type Engine struct {
 	log *slog.Logger
 
-	cli        *client.Client
-	proxyImg   string
+	cli      *client.Client
+	proxyImg string
+
 	containers []*ProxyContainer
+	stopch     chan struct{}
 }
 
 func NewEngine(
@@ -48,6 +53,7 @@ func NewEngine(
 		cli:        cli,
 		proxyImg:   proxyImg,
 		containers: containers,
+		stopch:     make(chan struct{}),
 	}, nil
 }
 
@@ -72,7 +78,15 @@ func (e *Engine) Run(ctx context.Context) error {
 		}
 	}
 
+	go e.updateContainerState()
+
 	return nil
+}
+
+func (e *Engine) ContainersInfo(ctx context.Context) []*ProxyContainer {
+	const op = "engine.ContainersInfo"
+
+	return e.containers
 }
 
 func (e *Engine) Shutdown(ctx context.Context) {
@@ -81,6 +95,8 @@ func (e *Engine) Shutdown(ctx context.Context) {
 	l := e.log.With(slog.String("op", op))
 
 	l.Info("stopping proxy manager engine")
+
+	close(e.stopch)
 
 	for _, ctr := range e.containers {
 		err := e.StopContainer(ctx, ctr)
@@ -91,6 +107,21 @@ func (e *Engine) Shutdown(ctx context.Context) {
 		err = e.RemoveContainer(ctx, ctr)
 		if err != nil {
 			l.Error("failed to remove container", slogger.Err(err))
+		}
+	}
+}
+
+func (e *Engine) updateContainerState() {
+	for {
+		select {
+		case <-e.stopch:
+		case <-time.After(updateTimeout):
+			for _, ctr := range e.containers {
+				err := e.ContainerState(context.Background(), ctr)
+				if err != nil {
+					e.log.Error("failed get info", "container_id", ctr.ID)
+				}
+			}
 		}
 	}
 }

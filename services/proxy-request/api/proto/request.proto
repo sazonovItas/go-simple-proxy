@@ -11,11 +11,9 @@ service ProxyRequestService {
 
   rpc Timestamp(TimestampRequest) returns (TimestampResponse) {}
 
-  rpc TimestampAndUserId(TimestampAndIdRequest)
-      returns (TimestampAndIdResponse) {}
+  rpc TimestampAndUserId(TimestampAndIdRequest) returns (TimestampResponse) {}
 
-  rpc TimestampAndProxyId(TimestampAndIdRequest)
-      returns (TimestampAndIdResponse) {}
+  rpc TimestampAndProxyId(TimestampAndIdRequest) returns (TimestampResponse) {}
 }
 
 message SaveRequest { ProxyRequest request = 1; }
@@ -27,8 +25,6 @@ message TimestampAndIdRequest {
   google.protobuf.Timestamp from = 2;
   google.protobuf.Timestamp to = 3;
 }
-
-message TimestampAndIdResponse { repeated ProxyRequest requests = 1; }
 
 message TimestampResponse { repeated ProxyRequest requests = 1; }
 

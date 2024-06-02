@@ -1,5 +1,5 @@
 IMAGE_TAG=latest
-SERVICE_NAME=proxy-request-service
+SERVICE_NAME=gateway-service
 
 .PHONY: build run 
 build:
@@ -7,12 +7,6 @@ build:
 
 run: build
 	./bin/$(SERVICE_NAME)
-
-.PHONY: proto
-proto:
-	$(foreach proto_file, $(shell find api/proto -name '*.proto'),\
-		protoc --go_out=pkg/pb/ --go-grpc_out=pkg/pb/ \
-		--proto_path=api/proto  $(proto_file);)
 
 .PHONY: docker-image docker-container
 docker-image:

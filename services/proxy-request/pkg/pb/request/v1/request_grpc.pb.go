@@ -25,8 +25,8 @@ type ProxyRequestServiceClient interface {
 	Save(ctx context.Context, in *SaveRequest, opts ...grpc.CallOption) (*SaveResponse, error)
 	Request(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Timestamp(ctx context.Context, in *TimestampRequest, opts ...grpc.CallOption) (*TimestampResponse, error)
-	TimestampAndUserId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error)
-	TimestampAndProxyId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error)
+	TimestampAndUserId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampResponse, error)
+	TimestampAndProxyId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampResponse, error)
 }
 
 type proxyRequestServiceClient struct {
@@ -64,8 +64,8 @@ func (c *proxyRequestServiceClient) Timestamp(ctx context.Context, in *Timestamp
 	return out, nil
 }
 
-func (c *proxyRequestServiceClient) TimestampAndUserId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error) {
-	out := new(TimestampAndIdResponse)
+func (c *proxyRequestServiceClient) TimestampAndUserId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampResponse, error) {
+	out := new(TimestampResponse)
 	err := c.cc.Invoke(ctx, "/request.ProxyRequestService/TimestampAndUserId", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -73,8 +73,8 @@ func (c *proxyRequestServiceClient) TimestampAndUserId(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *proxyRequestServiceClient) TimestampAndProxyId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampAndIdResponse, error) {
-	out := new(TimestampAndIdResponse)
+func (c *proxyRequestServiceClient) TimestampAndProxyId(ctx context.Context, in *TimestampAndIdRequest, opts ...grpc.CallOption) (*TimestampResponse, error) {
+	out := new(TimestampResponse)
 	err := c.cc.Invoke(ctx, "/request.ProxyRequestService/TimestampAndProxyId", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -89,8 +89,8 @@ type ProxyRequestServiceServer interface {
 	Save(context.Context, *SaveRequest) (*SaveResponse, error)
 	Request(context.Context, *GetRequest) (*GetResponse, error)
 	Timestamp(context.Context, *TimestampRequest) (*TimestampResponse, error)
-	TimestampAndUserId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error)
-	TimestampAndProxyId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error)
+	TimestampAndUserId(context.Context, *TimestampAndIdRequest) (*TimestampResponse, error)
+	TimestampAndProxyId(context.Context, *TimestampAndIdRequest) (*TimestampResponse, error)
 	mustEmbedUnimplementedProxyRequestServiceServer()
 }
 
@@ -107,10 +107,10 @@ func (UnimplementedProxyRequestServiceServer) Request(context.Context, *GetReque
 func (UnimplementedProxyRequestServiceServer) Timestamp(context.Context, *TimestampRequest) (*TimestampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Timestamp not implemented")
 }
-func (UnimplementedProxyRequestServiceServer) TimestampAndUserId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error) {
+func (UnimplementedProxyRequestServiceServer) TimestampAndUserId(context.Context, *TimestampAndIdRequest) (*TimestampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TimestampAndUserId not implemented")
 }
-func (UnimplementedProxyRequestServiceServer) TimestampAndProxyId(context.Context, *TimestampAndIdRequest) (*TimestampAndIdResponse, error) {
+func (UnimplementedProxyRequestServiceServer) TimestampAndProxyId(context.Context, *TimestampAndIdRequest) (*TimestampResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TimestampAndProxyId not implemented")
 }
 func (UnimplementedProxyRequestServiceServer) mustEmbedUnimplementedProxyRequestServiceServer() {}
