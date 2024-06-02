@@ -13,11 +13,11 @@ func (ah *authHandler) VerifyEmail(
 	ctx context.Context,
 	r *authv1.VerifyEmailRequest,
 ) (*authv1.Empty, error) {
-	if r.VerifyToken == "" {
+	if r.GetVerifyToken() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "verify token is required")
 	}
 
-	err := ah.auth.VerifyEmail(ctx, r.VerifyToken)
+	err := ah.auth.VerifyEmail(ctx, r.GetVerifyToken())
 	if err != nil {
 		return nil, GRPCError(err, "failed to verify email")
 	}

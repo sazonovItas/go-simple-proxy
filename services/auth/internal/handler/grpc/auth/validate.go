@@ -13,11 +13,11 @@ func (ah *authHandler) Validate(
 	ctx context.Context,
 	r *authv1.ValidateRequest,
 ) (*authv1.ValidateResponse, error) {
-	if r.Token == "" {
+	if r.GetToken() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "token is required")
 	}
 
-	claims, err := ah.auth.Validate(ctx, r.Token)
+	claims, err := ah.auth.Validate(ctx, r.GetToken())
 	if err != nil {
 		return nil, GRPCError(err, "failed validate token")
 	}

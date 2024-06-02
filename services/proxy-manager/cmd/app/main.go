@@ -29,7 +29,6 @@ func main() {
 		logger.LogConfig{Environment: "dev", LogLevel: logger.DEBUG},
 		os.Stdout,
 	).With(slog.String("app", "proxy-manager-service"))
-	l.Info("init config", "config", *cfg)
 
 	application := app.New(l, cfg)
 	defer application.Stop()

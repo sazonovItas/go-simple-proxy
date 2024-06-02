@@ -13,7 +13,7 @@ services:
       proxy-manager-network:
 
     ports:
-      - "3326:${GATEWAY_SERVICE_PORT}"
+      - "3030:${GATEWAY_SERVICE_PORT}"
 
     environment:
       HTTP_SERVER_PORT: ${GATEWAY_SERVICE_PORT}
@@ -135,7 +135,7 @@ services:
   # postgres db
   db:
     image: postgres:alpine
-    container_name: proxy-mananger-db
+    container_name: proxy-manager-db
     restart: unless-stopped
 
     networks:
@@ -145,7 +145,7 @@ services:
       - "5432:${POSTGRES_PORT}"
 
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
 
     environment:
       PGPORT: ${POSTGRES_PORT}

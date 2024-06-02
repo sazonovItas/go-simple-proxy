@@ -16,15 +16,15 @@ func (ph *requestHandler) Timestamp(
 	ctx context.Context,
 	in *requestv1.TimestampRequest,
 ) (*requestv1.TimestampResponse, error) {
-	if in.From == nil {
+	if in.GetFrom() == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "from timestamp is required")
 	}
 
-	if in.To == nil {
+	if in.GetTo() == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "to timestamp is required")
 	}
 
-	requests, err := ph.requestUsc.Timestamp(ctx, in.From.AsTime(), in.To.AsTime())
+	requests, err := ph.requestUsc.Timestamp(ctx, in.GetFrom().AsTime(), in.GetTo().AsTime())
 	if err != nil {
 		switch {
 		case errors.Is(err, adapter.ErrRequestNotFound):
@@ -46,24 +46,29 @@ func (ph *requestHandler) TimestampAndUserId(
 	ctx context.Context,
 	in *requestv1.TimestampAndIdRequest,
 ) (*requestv1.TimestampResponse, error) {
-	if in.From == nil {
+	if in.GetFrom() == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "from timestamp is required")
 	}
 
-	if in.To == nil {
+	if in.GetTo() == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "to timestamp is required")
 	}
 
-	if in.Id == "" {
+	if in.GetId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "user id is required")
 	}
 
-	id, err := uuid.Parse(in.Id)
+	id, err := uuid.Parse(in.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user id bad format")
 	}
 
-	requests, err := ph.requestUsc.TimestampAndUserId(ctx, in.From.AsTime(), in.To.AsTime(), id)
+	requests, err := ph.requestUsc.TimestampAndUserId(
+		ctx,
+		in.GetFrom().AsTime(),
+		in.GetTo().AsTime(),
+		id,
+	)
 	if err != nil {
 		switch {
 		case errors.Is(err, adapter.ErrRequestNotFound):
@@ -85,24 +90,29 @@ func (ph *requestHandler) TimestampAndProxyId(
 	ctx context.Context,
 	in *requestv1.TimestampAndIdRequest,
 ) (*requestv1.TimestampResponse, error) {
-	if in.From == nil {
+	if in.GetFrom() == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "from timestamp is required")
 	}
 
-	if in.To == nil {
+	if in.GetTo() == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "to timestamp is required")
 	}
 
-	if in.Id == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "user id is required")
+	if in.GetId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "proxy id is required")
 	}
 
-	id, err := uuid.Parse(in.Id)
+	id, err := uuid.Parse(in.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user id bad format")
 	}
 
-	requests, err := ph.requestUsc.TimestampAndProxyId(ctx, in.From.AsTime(), in.To.AsTime(), id)
+	requests, err := ph.requestUsc.TimestampAndProxyId(
+		ctx,
+		in.GetFrom().AsTime(),
+		in.GetTo().AsTime(),
+		id,
+	)
 	if err != nil {
 		switch {
 		case errors.Is(err, adapter.ErrRequestNotFound):

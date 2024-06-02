@@ -14,15 +14,15 @@ func (rh *requestHandler) Save(
 	ctx context.Context,
 	in *requestv1.SaveRequest,
 ) (*requestv1.SaveResponse, error) {
-	if in.Request.UserId == "" {
+	if in.Request.GetUserId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "proxy user id is required")
 	}
 
-	if in.Request.ProxyId == "" {
+	if in.Request.GetProxyId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "proxy id is required")
 	}
 
-	proxyRequest, err := ParseRequest(in.Request)
+	proxyRequest, err := ParseRequest(in.GetRequest())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}

@@ -24,7 +24,6 @@ func main() {
 		logger.LogConfig{Environment: cfg.Env, LogLevel: logger.DEBUG},
 		os.Stdout,
 	).With(slog.String("app", "auth-service"))
-	l.Info("init config", "config", cfg)
 
 	application := app.New(l, cfg)
 	defer application.Stop()

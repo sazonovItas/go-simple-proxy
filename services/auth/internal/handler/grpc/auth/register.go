@@ -13,19 +13,19 @@ func (ah *authHandler) Register(
 	ctx context.Context,
 	r *authv1.RegisterRequest,
 ) (*authv1.RegisterResponse, error) {
-	if r.Email == "" {
+	if r.GetEmail() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "email is required")
 	}
 
-	if r.Login == "" {
+	if r.GetLogin() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "login is required")
 	}
 
-	if r.Password == "" {
+	if r.GetPassword() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "password is required")
 	}
 
-	id, err := ah.auth.Register(ctx, r.Email, r.Login, r.Password)
+	id, err := ah.auth.Register(ctx, r.GetEmail(), r.GetLogin(), r.GetPassword())
 	if err != nil {
 		return nil, GRPCError(err, "failed to register")
 	}

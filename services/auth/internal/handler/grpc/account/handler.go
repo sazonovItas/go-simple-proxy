@@ -39,11 +39,11 @@ func (ah *accountHandler) User(
 	ctx context.Context,
 	r *accountv1.UserRequest,
 ) (*accountv1.UserResponse, error) {
-	if r.Id == "" {
+	if r.GetId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "user id is required")
 	}
 
-	id, err := uuid.Parse(r.Id)
+	id, err := uuid.Parse(r.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user id bad format")
 	}
