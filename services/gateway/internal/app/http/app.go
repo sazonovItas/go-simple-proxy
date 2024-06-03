@@ -48,6 +48,9 @@ func New(
 		cfg: cfg,
 
 		httpServer: httpServer,
+		userSvc:    userSvc,
+		reqSvc:     reqSvc,
+		proxySvc:   proxySvc,
 	}
 }
 

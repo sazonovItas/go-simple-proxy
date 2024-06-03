@@ -66,4 +66,7 @@ func New(l *slog.Logger, cfg *config.Config) *App {
 }
 
 func (a *App) Stop() {
+	a.cliProxy.Close()
+	a.cliRequest.Close()
+	a.cliUser.Close()
 }

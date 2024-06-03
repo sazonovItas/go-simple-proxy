@@ -23,7 +23,7 @@ func main() {
 	l := logger.NewSlogLogger(
 		logger.LogConfig{Environment: cfg.Env, LogLevel: logger.DEBUG},
 		os.Stdout,
-	).With(slog.String("app", "auth-service"))
+	).With(slog.String("app", "gateway-service"))
 
 	application := app.New(l, cfg)
 	defer application.Stop()

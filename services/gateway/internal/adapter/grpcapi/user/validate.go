@@ -32,9 +32,6 @@ func (ua *userApi) ValidateToken(ctx context.Context, token string) (*entity.Tok
 	}
 
 	return &entity.Token{
-		ID:    resp.GetId(),
-		Email: resp.GetEmail(),
-		Login: resp.GetLogin(),
-		Role:  resp.GetRole(),
+		ID: resp.GetId(),
 	}, nil
 }

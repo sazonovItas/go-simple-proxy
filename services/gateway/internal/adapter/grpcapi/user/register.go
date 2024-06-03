@@ -2,7 +2,6 @@ package grpcuserapi
 
 import (
 	"context"
-	"fmt"
 
 	authv1 "github.com/sazonovItas/proxy-manager/services/auth/pkg/pb/auth/v1"
 	"google.golang.org/grpc/codes"
@@ -25,14 +24,14 @@ func (ua *userApi) Register(
 		if e, ok := status.FromError(err); ok {
 			switch e.Code() {
 			case codes.InvalidArgument:
-				return "", fmt.Errorf("%s: %w", op, adapter.ErrInvalidArgument)
+				return "", adapter.ErrInvalidArgument
 			case codes.AlreadyExists:
-				return "", fmt.Errorf("%s: %w", op, adapter.ErrUserAlreadyExists)
+				return "", adapter.ErrUserAlreadyExists
 			default:
-				return "", fmt.Errorf("%s: %w", op, err)
+				return "", err
 			}
 		} else {
-			return "", fmt.Errorf("%s: %w", op, err)
+			return "", err
 		}
 	}
 

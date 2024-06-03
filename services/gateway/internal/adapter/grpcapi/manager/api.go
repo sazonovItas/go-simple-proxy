@@ -43,7 +43,6 @@ func transformProxyStates(proxyStates []*managerv1.ProxyState) []*entity.Proxy {
 	proxies := make([]*entity.Proxy, len(proxyStates))
 	for i := range proxyStates {
 		proxies[i] = &entity.Proxy{
-			ID:        proxyStates[i].GetId(),
 			Status:    proxyStates[i].GetStatus(),
 			Address:   proxyStates[i].GetAddress(),
 			StartedAt: proxyStates[i].GetStartedAt(),

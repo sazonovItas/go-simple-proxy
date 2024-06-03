@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/labstack/echo/v4"
-
 	"github.com/sazonovItas/proxy-manager/services/gateway/internal/entity"
 )
 
@@ -21,6 +19,8 @@ type UserService interface {
 	Register(ctx context.Context, email, login, password string) (id string, err error)
 	Login(ctx context.Context, login, password string) (token string, err error)
 	ValidateToken(ctx context.Context, token string) (tokenClaims *entity.Token, err error)
+
+	User(ctx context.Context, id string) (user *entity.User, err error)
 }
 
 type ProxyService interface {
@@ -38,14 +38,5 @@ func NewHandler(userSvc UserService, reqSvc RequestService, proxySvc ProxyServic
 		userSvc:  userSvc,
 		proxySvc: proxySvc,
 		reqSvc:   reqSvc,
-	}
-}
-
-func (h *handler) InitRoutes(api *echo.Group) {
-	v1 := api.Group("/v1")
-	{
-		h.initAuthRoutes(v1)
-		h.initUserRoutes(v1)
-		h.initProxyRoutes(v1)
 	}
 }

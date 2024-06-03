@@ -3,8 +3,9 @@ package entity
 import "time"
 
 type User struct {
-	Email     string    `json:"email,omitempty"`
-	Login     string    `json:"login,omitempty"`
-	Role      string    `json:"role,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	Email     string    `json:"email"`
+	Login     string    `json:"login"`
+	Passsword string    `json:"-"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
 }

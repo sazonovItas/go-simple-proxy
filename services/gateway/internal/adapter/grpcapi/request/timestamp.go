@@ -115,9 +115,6 @@ func transformRequests(rs []*requestv1.ProxyRequest) []*entity.Request {
 	requests := make([]*entity.Request, len(rs))
 	for i := range rs {
 		requests[i] = &entity.Request{
-			ID:       rs[i].Id,
-			UserID:   rs[i].UserId,
-			ProxyID:  rs[i].ProxyId,
 			RemoteIP: rs[i].RemoteIp,
 			Host:     rs[i].Host,
 			Upload:   rs[i].Upload,
