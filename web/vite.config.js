@@ -16,6 +16,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  preview: {
+    host: true,
+    port: 5173,
+  },
+  server: {
+    port: 5173,
+  },
   plugins: [vue()],
   define: {
     VITE_BACKEND_URL: process.env.VITE_BACKEND_URL,
