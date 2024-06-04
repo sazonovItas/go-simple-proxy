@@ -26,13 +26,6 @@ services:
       AUTH_SERVICE_ADDR: "auth-service:${AUTH_SERVICE_PORT}"
       MANAGER_SERVICE_ADDR: "manager-service:${MANAGER_SERVICE_PORT}"
 
-    healthcheck:
-      test: curl --fail http://127.0.0.1:${GATEWAY_SERVICE_PORT}/api/healthcheck || exit 1
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
     depends_on:
       manager-service:
         condition: service_started

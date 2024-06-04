@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"log"
+
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -24,14 +26,7 @@ func (h *handler) initAuthRoutes(api *echo.Group) {
 
 func (h *handler) initUserRoutes(api *echo.Group) {
 	user := api.Group("/user", echojwt.WithConfig(echojwt.Config{
-		ParseTokenFunc: func(c echo.Context, auth string) (interface{}, error) {
-			claims, err := h.userSvc.ValidateToken(c.Request().Context(), auth)
-			if err != nil {
-				return nil, err
-			}
-
-			return claims, nil
-		},
+		ParseTokenFunc: h.parseTokenFunc,
 	}))
 	{
 		user.GET("/account", h.CurrentUser)
@@ -49,6 +44,8 @@ func (h *handler) initProxyRoutes(api *echo.Group) {
 }
 
 func (h *handler) parseTokenFunc(c echo.Context, auth string) (interface{}, error) {
+	log.Println(auth)
+
 	claims, err := h.userSvc.ValidateToken(c.Request().Context(), auth)
 	if err != nil {
 		return nil, err

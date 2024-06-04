@@ -33,7 +33,7 @@ func (h *handler) CurrentUserRequests(c echo.Context) error {
 
 	requests, err := h.reqSvc.TimestampAndUserId(
 		c.Request().Context(),
-		time.Now().AddDate(0, 0, -3),
+		time.Now().AddDate(0, 0, -1),
 		time.Now(),
 		id,
 	)

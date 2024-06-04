@@ -31,7 +31,7 @@ func New(
 	reqSvc v1.RequestService,
 	proxySvc v1.ProxyService,
 ) *App {
-	router := httphandler.NewRouter(cfg.Timeout)
+	router := httphandler.NewRouter(cfg.Timeout, cfg.Port)
 
 	handler := v1.NewHandler(userSvc, reqSvc, proxySvc)
 	handler.InitRoutes(router.Group("/api"))

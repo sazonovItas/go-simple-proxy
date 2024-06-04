@@ -13,6 +13,7 @@ type HTTPServerConfig struct {
 	Timeout         time.Duration `yaml:"timeout"          env:"HTTP_SERVER_TIMEOUT"          env-default:"10s"`
 	IdleTimeout     time.Duration `yaml:"idle_timeout"     env:"HTTP_SERVER_IDLE_TIMEOUT"     env-default:"60s"`
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env:"HTTP_SERVER_SHUTDOWN_TIMEOUT" env-default:"10s"`
+	Origin          string        `yaml:"origin"           env:"HTTP_SERVER_ORIGIN"`
 }
 
 type ServicesConfig struct {
