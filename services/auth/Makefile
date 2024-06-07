@@ -25,6 +25,7 @@ docker-container:
 		--name=$(SERVICE_NAME) \
 		--network=host \
 		--env-file=./.env.sample \
+
 		-d $(SERVICE_NAME):$(IMAGE_TAG)
 
 .PHONY: test

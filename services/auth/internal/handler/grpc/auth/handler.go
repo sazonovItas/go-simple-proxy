@@ -14,11 +14,6 @@ type AuthService interface {
 	Register(ctx context.Context, email, login, password string) (uuid.UUID, error)
 	Login(ctx context.Context, email, password string) (string, error)
 	Validate(ctx context.Context, token string) (entity.UserInfo, error)
-
-	VerifyEmail(ctx context.Context, verifyToken string) error
-	ResetPassword(ctx context.Context, resetToken, password string) error
-	GenerateResetToken(ctx context.Context, email string) error
-	ValidateResetToken(ctx context.Context, resetToken string) error
 }
 
 type authHandler struct {

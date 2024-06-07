@@ -1,7 +1,6 @@
 package httphandler
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -31,10 +30,8 @@ func NewRouter(timeout time.Duration, port int) *echo.Echo {
 		Timeout: timeout,
 	}))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{
-			fmt.Sprintf("http://locahost:%d", port),
-			fmt.Sprintf("http://proxymanager.com:%d", port),
-			fmt.Sprintf("http://proxymanager.com:%d", 5173),
+		AllowOriginFunc: func(origin string) (bool, error) {
+			return true, nil
 		},
 		AllowMethods:     []string{"GET", "OPTIONS", "POST"},
 		AllowCredentials: true,

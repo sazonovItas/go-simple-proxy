@@ -8,6 +8,9 @@ services:
     container_name: proxy-manager-frontend
     restart: unless-stopped
 
+    networks:
+      proxy-manager-network:
+
     ports:
       - "${FRONTEND_SERVICE_PORT}:5173"
 
@@ -62,8 +65,8 @@ services:
     networks:
       proxy-manager-network:
 
-    ports:
-      - "3225:${MANAGER_SERVICE_PORT}"
+    # ports:
+    #   - "3225:${MANAGER_SERVICE_PORT}"
 
     volumes:
       - ./services/proxy-manager/configs:/configs
@@ -133,9 +136,6 @@ services:
 
   # service for migrating
   migrator:
-    tty: true
-    stdin_open: true
-
     build:
       dockerfile: ./deploy/docker/migrator.Dockerfile
     container_name: go-migrator
@@ -162,8 +162,8 @@ services:
     networks:
       proxy-manager-network:
 
-    ports:
-      - "5432:${POSTGRES_PORT}"
+    # ports:
+    #   - "5432:${POSTGRES_PORT}"
 
     volumes:
       - pgdata:/var/lib/postgresql/data

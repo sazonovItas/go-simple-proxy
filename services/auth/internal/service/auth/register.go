@@ -2,14 +2,12 @@ package authsvc
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
 	slogger "github.com/sazonovItas/proxy-manager/pkg/logger/sl"
 
 	"github.com/sazonovItas/proxy-manager/services/auth/internal/entity"
-	"github.com/sazonovItas/proxy-manager/services/auth/internal/lib/hasher"
 )
 
 func (as *authService) Register(
@@ -27,19 +25,11 @@ func (as *authService) Register(
 		return uuid.UUID{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	verifyToken, err := hasher.NewRandomHash()
-	if err != nil {
-		as.log.Error("failed to generate verify token", slogger.Err(err))
-
-		return uuid.UUID{}, fmt.Errorf("%s: %w", op, err)
-	}
-
 	user := entity.User{
 		Email:        email,
 		Login:        login,
 		PasswordHash: string(passwordHash),
 		UserRole:     entity.SimpleUser,
-		VerifyToken:  sql.NullString{String: verifyToken, Valid: true},
 	}
 
 	id, err := as.userRepo.NewUser(ctx, &user)

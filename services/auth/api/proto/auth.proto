@@ -9,16 +9,6 @@ service Auth {
   rpc Login(LoginRequest) returns (LoginResponse) {}
 
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
-
-  rpc VerifyEmail(VerifyEmailRequest) returns (Empty) {}
-
-  rpc UpdatePasswordByToken(UpdatePasswordByTokenRequest) returns (Empty) {}
-
-  rpc GenerateResetToken(GenerateResetTokenRequest) returns (Empty) {}
-
-  rpc ValidateResetToken(ValidateResetTokenRequest) returns (Empty) {}
-
-  rpc ResetPassword(ResetPasswordRequest) returns (Empty) {}
 }
 
 message RegisterRequest {
@@ -44,22 +34,3 @@ message ValidateResponse {
   string login = 3;
   string role = 4;
 }
-
-message VerifyEmailRequest { string verify_token = 1; }
-
-message UpdatePasswordByTokenRequest {
-  string token = 1;
-  string old_password = 2;
-  string new_password = 3;
-}
-
-message GenerateResetTokenRequest { string email = 1; }
-
-message ValidateResetTokenRequest { string reset_token = 1; }
-
-message ResetPasswordRequest {
-  string reset_token = 1;
-  string password = 2;
-}
-
-message Empty {};
