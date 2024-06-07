@@ -187,4 +187,4 @@ networks:
 volumes:
   pgdata:
     name: proxy-manager-db-volume
-    external: true
+    # external: true
